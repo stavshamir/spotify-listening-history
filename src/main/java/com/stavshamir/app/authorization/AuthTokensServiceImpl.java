@@ -71,6 +71,7 @@ public class AuthTokensServiceImpl implements AuthTokensService {
                 .findByUserId(userId)
                 .orElse(new AuthTokens(userId, accessToken, refreshToken));
 
+        auth.setAccessToken(accessToken);
         authTokensRepository.save(auth);
     }
 

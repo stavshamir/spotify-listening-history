@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -28,19 +29,27 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
     private final SpotifyClient spotifyClient;
     private final AuthTokensService authTokensService;
     private final ListeningHistoryRepository listeningHistoryRepository;
+    private final MostRecentlyPlayedAtRepository mostRecentlyPlayedAtRepository;
 
     @Autowired
-    public ListeningHistoryServiceImpl(SpotifyClient spotifyClient, AuthTokensService authTokensService, ListeningHistoryRepository listeningHistoryRepository) {
+    public ListeningHistoryServiceImpl(SpotifyClient spotifyClient, AuthTokensService authTokensService, ListeningHistoryRepository listeningHistoryRepository, MostRecentlyPlayedAtRepository mostRecentlyPlayedAtRepository) {
         this.spotifyClient = spotifyClient;
         this.authTokensService = authTokensService;
         this.listeningHistoryRepository = listeningHistoryRepository;
+        this.mostRecentlyPlayedAtRepository = mostRecentlyPlayedAtRepository;
     }
 
     @Override
     public GetCurrentUsersRecentlyPlayedTracksRequest getCurrentUsersRecentlyPlayedTracksRequest(String userId) {
+        Timestamp mostRecentlyPlayedAt = mostRecentlyPlayedAtRepository
+                .findByUserId(userId)
+                .map(MostRecentlyPlayedAt::getPlayedAt)
+                .orElse(new Timestamp(0));
+
         return spotifyClient
                 .getSpotifyApiWithAccessToken(authTokensService.getAccessToken(userId))
                 .getCurrentUsersRecentlyPlayedTracks()
+                .after(mostRecentlyPlayedAt)
                 .limit(MAX_LIMIT)
                 .build();
     }
@@ -59,7 +68,10 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
                 .map(item -> fromPlayHistoryItem(userId, item))
                 .collect(toList());
 
-        listeningHistoryRepository.saveAll(history);
+        if (!history.isEmpty()) {
+            insertOrUpdateIfExists(userId, history.get(0).getPlayedAt());
+            listeningHistoryRepository.saveAll(history);
+        }
     }
 
     private static ListeningHistory fromPlayHistoryItem(String userId, PlayHistory item) {
@@ -68,5 +80,16 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
                 item.getTrack().getUri(),
                 new Timestamp(item.getPlayedAt().getTime())
         );
+    }
+
+    private void insertOrUpdateIfExists(String userId, Date mostRecentlyPlayedAt) {
+        final Timestamp playedAt = new Timestamp(mostRecentlyPlayedAt.getTime() + 1001);
+
+        MostRecentlyPlayedAt time = mostRecentlyPlayedAtRepository
+                .findByUserId(userId)
+                .orElse(new MostRecentlyPlayedAt(userId, playedAt));
+
+        time.setPlayedAt(playedAt);
+        mostRecentlyPlayedAtRepository.save(time);
     }
 }
