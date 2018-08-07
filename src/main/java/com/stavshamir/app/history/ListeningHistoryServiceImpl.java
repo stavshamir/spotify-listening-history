@@ -73,7 +73,7 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
         if (!history.isEmpty()) {
             insertOrUpdateIfExists(userId, history.get(0).getPlayedAt());
             listeningHistoryRepository.saveAll(history);
-            logger.info(history.size() + "tracks persisted");
+            logger.info(history.size() + " tracks persisted");
         } else {
             logger.info("There were no new tracks to persist");
         }
