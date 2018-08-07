@@ -62,6 +62,8 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
     }
 
     private void persistListeningHistoryForUser(String userId) throws IOException, SpotifyWebApiException {
+        logger.info("Pulling listening history from Spotify for " + userId);
+
         PagingCursorbased<PlayHistory> tracks = getCurrentUsersRecentlyPlayedTracksRequest(userId).execute();
 
         List<ListeningHistory> history = Arrays.stream(tracks.getItems())
@@ -71,6 +73,9 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
         if (!history.isEmpty()) {
             insertOrUpdateIfExists(userId, history.get(0).getPlayedAt());
             listeningHistoryRepository.saveAll(history);
+            logger.info(history.size() + "tracks persisted");
+        } else {
+            logger.info("There were no new tracks to persist");
         }
     }
 
