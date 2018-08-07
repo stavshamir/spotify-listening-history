@@ -8,10 +8,10 @@ import java.net.URI;
 
 @Component
 public class SpotifyClient {
-    private final String CLIENT_ID = "94002a67e5704e2294bd4a5874cddec6";
-    private final String CLIENT_SECRET = "f57133b0d830479ca8e17e4c9b5bf76d";
-//    private final URI REDIRECT_URI = SpotifyHttpManager.makeUri("http://localhost:5000/callback");
-    private final URI REDIRECT_URI = SpotifyHttpManager.makeUri("https://shrouded-island-16271.herokuapp.com/callback");
+
+    private static final String CLIENT_ID     = System.getenv("CLIENT_ID");
+    private static final String CLIENT_SECRET = System.getenv("CLIENT_SECRET");
+    private static final URI    REDIRECT_URI  = SpotifyHttpManager.makeUri(System.getenv("REDIRECT_URI"));
 
     private final SpotifyApi spotifyApi = new SpotifyApi.Builder()
                 .setClientId(CLIENT_ID)
