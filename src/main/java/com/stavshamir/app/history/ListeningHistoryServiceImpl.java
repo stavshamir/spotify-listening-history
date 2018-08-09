@@ -71,7 +71,7 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
                 .collect(toList());
 
         if (!history.isEmpty()) {
-            insertOrUpdateIfExists(userId, history.get(0).getPlayedAt());
+            persistMostRecentlyPlayedAt(userId, history.get(0).getPlayedAt());
             listeningHistoryRepository.saveAll(history);
             logger.info(history.size() + " tracks persisted");
         } else {
@@ -87,7 +87,7 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
         );
     }
 
-    private void insertOrUpdateIfExists(String userId, Date mostRecentlyPlayedAt) {
+    private void persistMostRecentlyPlayedAt(String userId, Date mostRecentlyPlayedAt) {
         final Timestamp playedAt = new Timestamp(mostRecentlyPlayedAt.getTime() + 1001);
 
         MostRecentlyPlayedAt time = mostRecentlyPlayedAtRepository
@@ -97,4 +97,5 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
         time.setPlayedAt(playedAt);
         mostRecentlyPlayedAtRepository.save(time);
     }
+
 }
