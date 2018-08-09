@@ -20,6 +20,7 @@ public class SpotifyClient {
                 .build();
 
     public SpotifyApi getSpotifyApi() {
+        spotifyApi.setAccessToken(null);
         return spotifyApi;
     }
 
