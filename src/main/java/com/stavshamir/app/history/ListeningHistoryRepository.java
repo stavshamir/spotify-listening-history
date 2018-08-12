@@ -1,10 +1,11 @@
 package com.stavshamir.app.history;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.sql.Timestamp;
-import java.util.List;
 
-public interface ListeningHistoryRepository extends CrudRepository<ListeningHistory, Long> {
-    List<ListeningHistory> findAllByUserIdAndPlayedAtAfterOrderByPlayedAtDesc(String userId, Timestamp after);
+public interface ListeningHistoryRepository extends PagingAndSortingRepository<ListeningHistory, Long> {
+    Page<ListeningHistory> findAllByUserIdAndPlayedAtAfterOrderByPlayedAtDesc(String userId, Timestamp after, Pageable pageable);
 }

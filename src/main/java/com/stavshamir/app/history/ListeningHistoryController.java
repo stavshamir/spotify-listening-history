@@ -2,6 +2,8 @@ package com.stavshamir.app.history;
 
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -9,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.List;
 
 @RestController
 @RequestMapping("/listening-history")
@@ -34,11 +35,12 @@ public class ListeningHistoryController {
     }
 
     @RequestMapping("/get")
-    public List<TrackDataWithPlayedAt> get(
+    public Page<TrackDataWithPlayedAt> get(
+            Pageable pageable,
             @CookieValue("spotify-user-uri") String userUri,
             @RequestParam(required = false, defaultValue = "0") long after
     ) throws IOException, SpotifyWebApiException {
-        return listeningHistoryService.getListeningHistory(userUri, new Timestamp(after));
+        return listeningHistoryService.getListeningHistory(userUri, new Timestamp(after), pageable);
     }
 
 }
