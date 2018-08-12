@@ -4,9 +4,11 @@ import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.List;
 
 @RestController
@@ -32,8 +34,11 @@ public class ListeningHistoryController {
     }
 
     @RequestMapping("/get")
-    public List<TrackDataWithPlayedAt> read(@CookieValue("spotify-user-uri") String userUri) throws IOException, SpotifyWebApiException {
-        return listeningHistoryService.getListeningHistory(userUri);
+    public List<TrackDataWithPlayedAt> get(
+            @CookieValue("spotify-user-uri") String userUri,
+            @RequestParam(required = false, defaultValue = "0") long after
+    ) throws IOException, SpotifyWebApiException {
+        return listeningHistoryService.getListeningHistory(userUri, new Timestamp(after));
     }
 
 }

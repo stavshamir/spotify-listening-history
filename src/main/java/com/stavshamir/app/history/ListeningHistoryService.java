@@ -4,6 +4,7 @@ import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.requests.data.player.GetCurrentUsersRecentlyPlayedTracksRequest;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.List;
 
 public interface ListeningHistoryService {
@@ -11,5 +12,5 @@ public interface ListeningHistoryService {
 
     void persistListeningHistory() throws IOException, SpotifyWebApiException;
 
-    List<TrackDataWithPlayedAt> getListeningHistory(String userUri) throws IOException, SpotifyWebApiException;
+    List<TrackDataWithPlayedAt> getListeningHistory(String userUri, Timestamp after) throws IOException, SpotifyWebApiException;
 }
