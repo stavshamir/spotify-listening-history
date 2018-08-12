@@ -7,11 +7,13 @@ import com.wrapper.spotify.model_objects.specification.ArtistSimplified;
 import com.wrapper.spotify.model_objects.specification.Track;
 import com.wrapper.spotify.requests.data.tracks.GetTrackRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
 
+@Service
 public class TrackDataServiceImpl implements TrackDataService {
 
     private final SpotifyClient spotifyClient;

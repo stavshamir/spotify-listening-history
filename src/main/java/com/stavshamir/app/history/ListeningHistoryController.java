@@ -2,10 +2,12 @@ package com.stavshamir.app.history;
 
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/listening-history")
@@ -19,7 +21,7 @@ public class ListeningHistoryController {
     }
 
     @RequestMapping("/persist")
-    public String persistListeningHistory() {
+    public String persist() {
         try {
             listeningHistoryService.persistListeningHistory();
         } catch (IOException | SpotifyWebApiException e) {
@@ -27,6 +29,11 @@ public class ListeningHistoryController {
         }
 
         return "Listening history persisted";
+    }
+
+    @RequestMapping("/get")
+    public List<TrackDataWithPlayedAt> read(@CookieValue("spotify-user-uri") String userUri) throws IOException, SpotifyWebApiException {
+        return listeningHistoryService.getListeningHistory(userUri);
     }
 
 }

@@ -2,6 +2,8 @@ package com.stavshamir.app.history;
 
 import com.stavshamir.app.authorization.AuthTokensService;
 import com.stavshamir.app.spotify.SpotifyClient;
+import com.stavshamir.app.track.TrackData;
+import com.stavshamir.app.track.TrackDataService;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.model_objects.specification.PagingCursorbased;
 import com.wrapper.spotify.model_objects.specification.PlayHistory;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -30,13 +33,15 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
     private final AuthTokensService authTokensService;
     private final ListeningHistoryRepository listeningHistoryRepository;
     private final MostRecentlyPlayedAtRepository mostRecentlyPlayedAtRepository;
+    private final TrackDataService trackDataService;
 
     @Autowired
-    public ListeningHistoryServiceImpl(SpotifyClient spotifyClient, AuthTokensService authTokensService, ListeningHistoryRepository listeningHistoryRepository, MostRecentlyPlayedAtRepository mostRecentlyPlayedAtRepository) {
+    public ListeningHistoryServiceImpl(SpotifyClient spotifyClient, AuthTokensService authTokensService, ListeningHistoryRepository listeningHistoryRepository, MostRecentlyPlayedAtRepository mostRecentlyPlayedAtRepository, TrackDataService trackDataService) {
         this.spotifyClient = spotifyClient;
         this.authTokensService = authTokensService;
         this.listeningHistoryRepository = listeningHistoryRepository;
         this.mostRecentlyPlayedAtRepository = mostRecentlyPlayedAtRepository;
+        this.trackDataService = trackDataService;
     }
 
     @Override
@@ -96,6 +101,17 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
 
         time.setPlayedAt(playedAt);
         mostRecentlyPlayedAtRepository.save(time);
+    }
+
+    public List<TrackDataWithPlayedAt> getListeningHistory(String userUri) throws IOException, SpotifyWebApiException {
+        List<TrackDataWithPlayedAt> tracks = new ArrayList<>();
+
+        for (ListeningHistory lh : listeningHistoryRepository.findAllByUserId(userUri)) {
+            TrackData trackData = trackDataService.getTrackData(lh.getUri(), userUri);
+            tracks.add(new TrackDataWithPlayedAt(trackData, lh.getPlayedAt()));
+        }
+
+        return tracks;
     }
 
 }

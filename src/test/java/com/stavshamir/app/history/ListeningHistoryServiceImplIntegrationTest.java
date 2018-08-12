@@ -3,6 +3,7 @@ package com.stavshamir.app.history;
 import com.stavshamir.app.authorization.AuthTokens;
 import com.stavshamir.app.authorization.AuthTokensService;
 import com.stavshamir.app.spotify.SpotifyClient;
+import com.stavshamir.app.track.TrackDataService;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
@@ -49,9 +50,12 @@ public class ListeningHistoryServiceImplIntegrationTest {
     @Autowired
     private MostRecentlyPlayedAtRepository mostRecentlyPlayedAtRepository;
 
+    @Autowired
+    private TrackDataService trackDataService;
+
     @Before
     public void setUp() {
-        listeningHistoryService = new ListeningHistoryServiceImpl(spotifyClient, authTokensService, listeningHistoryRepository, mostRecentlyPlayedAtRepository);
+        listeningHistoryService = new ListeningHistoryServiceImpl(spotifyClient, authTokensService, listeningHistoryRepository, mostRecentlyPlayedAtRepository, trackDataService);
     }
 
     @Test

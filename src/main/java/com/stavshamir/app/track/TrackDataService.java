@@ -6,6 +6,6 @@ import java.io.IOException;
 
 public interface TrackDataService {
 
-    TrackData getTrackData(String uri, String userUri) throws IOException, SpotifyWebApiException;
+    TrackData getTrackData(String trackUri, String userUri) throws IOException, SpotifyWebApiException;
 
 }
