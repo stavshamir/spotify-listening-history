@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.view.RedirectView;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @RestController
@@ -32,9 +34,10 @@ public class AuthTokensController {
     }
 
     @RequestMapping("/callback")
-    public String callback(@RequestParam("code") String code) {
+    public String callback(HttpServletResponse response, @RequestParam("code") String code) {
         try {
-            authTokensService.retrieveAndPersistTokens(code);
+            String userId = authTokensService.retrieveAndPersistTokens(code);
+            response.addCookie(new Cookie("spotify-user-uri", userId));
         } catch (IOException | SpotifyWebApiException e) {
             return "Failed to retrieve authorization credentials from Spotify API: " + e.getMessage();
         }

@@ -10,7 +10,14 @@ public interface AuthTokensService {
 
     AuthorizationCodeUriRequest getAuthorizationCodeUriRequest(String scope);
 
-    void retrieveAndPersistTokens(String code) throws IOException, SpotifyWebApiException;
+    /**
+     * Swap the given code for access and refresh tokens from SpotifyApi, persist them and return the uri of the current user.
+     * @param code received by the authorization endpoint callback.
+     * @return the uri of the current user.
+     * @throws IOException
+     * @throws SpotifyWebApiException
+     */
+    String retrieveAndPersistTokens(String code) throws IOException, SpotifyWebApiException;
 
     /**
      * Return an access token for the user with this userId.

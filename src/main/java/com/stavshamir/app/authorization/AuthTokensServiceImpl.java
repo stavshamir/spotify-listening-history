@@ -40,7 +40,7 @@ public class AuthTokensServiceImpl implements AuthTokensService {
     }
 
     @Override
-    public void retrieveAndPersistTokens(String code) throws IOException, SpotifyWebApiException {
+    public String retrieveAndPersistTokens(String code) throws IOException, SpotifyWebApiException {
         AuthorizationCodeCredentials credentials = getAuthorizationCodeRequest(code).execute();
 
         String userId = spotifyClient.getSpotifyApiWithAccessToken(credentials.getAccessToken())
@@ -50,6 +50,7 @@ public class AuthTokensServiceImpl implements AuthTokensService {
                 .getUri();
 
         persistTokens(userId, credentials);
+        return userId;
     }
 
     private AuthorizationCodeRequest getAuthorizationCodeRequest(String code) {
