@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 
 @RestController
+@RequestMapping("/listening-history")
 public class ListeningHistoryController {
 
     private final ListeningHistoryService listeningHistoryService;
@@ -17,7 +18,7 @@ public class ListeningHistoryController {
         this.listeningHistoryService = listeningHistoryService;
     }
 
-    @RequestMapping("/persist-listening-history")
+    @RequestMapping("/persist")
     public String persistListeningHistory() {
         try {
             listeningHistoryService.persistListeningHistory();
