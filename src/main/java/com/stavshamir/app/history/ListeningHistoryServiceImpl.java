@@ -104,9 +104,10 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
     }
 
     public List<TrackDataWithPlayedAt> getListeningHistory(String userUri, Timestamp after) throws IOException, SpotifyWebApiException {
-        List<TrackDataWithPlayedAt> tracks = new ArrayList<>();
+        persistListeningHistoryForUser(userUri);
 
-        for (ListeningHistory lh : listeningHistoryRepository.findAllByUserIdAndPlayedAtAfter(userUri, after)) {
+        List<TrackDataWithPlayedAt> tracks = new ArrayList<>();
+        for (ListeningHistory lh : listeningHistoryRepository.findAllByUserIdAndPlayedAtAfterOrderByPlayedAtDesc(userUri, after)) {
             TrackData trackData = trackDataService.getTrackData(lh.getUri(), userUri);
             tracks.add(new TrackDataWithPlayedAt(trackData, lh.getPlayedAt()));
         }

@@ -6,5 +6,5 @@ import java.sql.Timestamp;
 import java.util.List;
 
 public interface ListeningHistoryRepository extends CrudRepository<ListeningHistory, Long> {
-    List<ListeningHistory> findAllByUserIdAndPlayedAtAfter(String userId, Timestamp after);
+    List<ListeningHistory> findAllByUserIdAndPlayedAtAfterOrderByPlayedAtDesc(String userId, Timestamp after);
 }
