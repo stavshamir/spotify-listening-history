@@ -4,11 +4,9 @@ import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Timestamp;
 
@@ -38,8 +36,10 @@ public class ListeningHistoryController {
     public Page<TrackDataWithPlayedAt> get(
             Pageable pageable,
             @CookieValue("spotify-user-uri") String userUri,
-            @RequestParam(required = false, defaultValue = "0") long after
+            @RequestParam(required = false, defaultValue = "0") long after,
+            HttpServletResponse response
     ) throws IOException, SpotifyWebApiException {
+        response.addHeader("Access-Control-Allow-Credentials","true");
         return listeningHistoryService.getListeningHistory(userUri, new Timestamp(after), pageable);
     }
 
