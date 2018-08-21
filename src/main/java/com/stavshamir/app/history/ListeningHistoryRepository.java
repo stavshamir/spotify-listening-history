@@ -7,5 +7,5 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import java.sql.Timestamp;
 
 public interface ListeningHistoryRepository extends PagingAndSortingRepository<ListeningHistory, Long> {
-    Page<ListeningHistory> findAllByUserIdAndPlayedAtAfterAndPlayedAtBeforeOrderByPlayedAtDesc(String userId, Timestamp after, Timestamp before, Pageable pageable);
+    Page<ListeningHistory> findAllByUserIdAndPlayedAtGreaterThanEqualAndPlayedAtBeforeOrderByPlayedAtDesc(String userId, Timestamp after, Timestamp before, Pageable pageable);
 }

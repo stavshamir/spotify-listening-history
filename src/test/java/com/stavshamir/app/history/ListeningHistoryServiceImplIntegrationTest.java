@@ -157,13 +157,13 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .contains("2")
                 .contains("3");
 
-        assertThat(getHistoryTrackUris(1000, 4000000000000L))
-                .as("History should contain only tracks uris after specified time")
+        assertThat(getHistoryTrackUris(2000, 4000000000000L))
+                .as("History should contain only tracks uris at and after specified time")
                 .doesNotContain("1")
                 .contains("2")
                 .contains("3");
 
-        assertThat(getHistoryTrackUris(3000, 4000000000000L))
+        assertThat(getHistoryTrackUris(4000, 4000000000000L))
                 .as("History after the last recorded date should be an empty list")
                 .isEmpty();
 
@@ -173,7 +173,7 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .contains("2")
                 .doesNotContain("3");
 
-        assertThat(getHistoryTrackUris(1000, 3000))
+        assertThat(getHistoryTrackUris(2000, 3000))
                 .as("History should contain only tracks uris between specified times")
                 .doesNotContain("1")
                 .contains("2")
