@@ -40,6 +40,8 @@ public class ListeningHistoryController {
             HttpServletResponse response
     ) throws IOException, SpotifyWebApiException {
         response.addHeader("Access-Control-Allow-Credentials","true");
+
+        listeningHistoryService.persistListeningHistoryForUser(userUri);
         return listeningHistoryService.getListeningHistory(userUri, new Timestamp(after), pageable);
     }
 

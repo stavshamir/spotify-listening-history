@@ -48,7 +48,7 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
     }
 
     @Override
-    public GetCurrentUsersRecentlyPlayedTracksRequest getCurrentUsersRecentlyPlayedTracksRequest(String userId) {
+    public GetCurrentUsersRecentlyPlayedTracksRequest buildGetCurrentUsersRecentlyPlayedTracksRequest(String userId) {
         Timestamp mostRecentlyPlayedAt = mostRecentlyPlayedAtRepository
                 .findByUserId(userId)
                 .map(MostRecentlyPlayedAt::getPlayedAt)
@@ -69,10 +69,11 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
         }
     }
 
-    private void persistListeningHistoryForUser(String userId) throws IOException, SpotifyWebApiException {
+    @Override
+    public void persistListeningHistoryForUser(String userId) throws IOException, SpotifyWebApiException {
         logger.info("Pulling listening history from Spotify for " + userId);
 
-        PagingCursorbased<PlayHistory> tracks = getCurrentUsersRecentlyPlayedTracksRequest(userId).execute();
+        PagingCursorbased<PlayHistory> tracks = buildGetCurrentUsersRecentlyPlayedTracksRequest(userId).execute();
 
         List<ListeningHistory> history = Arrays.stream(tracks.getItems())
                 .map(item -> fromPlayHistoryItem(userId, item))
@@ -108,8 +109,6 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
 
     @Override
     public Page<TrackDataWithPlayedAt> getListeningHistory(String userUri, Timestamp after, Pageable pageable) throws IOException, SpotifyWebApiException {
-        persistListeningHistoryForUser(userUri);
-
         Page<ListeningHistory> listeningHistoryPage = listeningHistoryRepository.findAllByUserIdAndPlayedAtAfterOrderByPlayedAtDesc(userUri, after, pageable);
         List<TrackDataWithPlayedAt> tracks = new ArrayList<>();
 

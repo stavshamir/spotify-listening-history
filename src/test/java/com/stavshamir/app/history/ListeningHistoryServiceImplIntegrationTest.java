@@ -76,7 +76,7 @@ public class ListeningHistoryServiceImplIntegrationTest {
 
         assertThat(expectedRequest)
                 .as("A new user request 'after' field should be Timestamp(0)")
-                .isEqualTo(listeningHistoryService.getCurrentUsersRecentlyPlayedTracksRequest(MOCK_USER_ID).getUri().getQuery());
+                .isEqualTo(listeningHistoryService.buildGetCurrentUsersRecentlyPlayedTracksRequest(MOCK_USER_ID).getUri().getQuery());
     }
 
     @Test
@@ -97,12 +97,46 @@ public class ListeningHistoryServiceImplIntegrationTest {
 
         assertThat(expectedRequest)
                 .as("An existing user request 'after' field should match that in most_recently_played_at table")
-                .isEqualTo(listeningHistoryService.getCurrentUsersRecentlyPlayedTracksRequest(TESTER_USER_ID).getUri().getQuery());
+                .isEqualTo(listeningHistoryService.buildGetCurrentUsersRecentlyPlayedTracksRequest(TESTER_USER_ID).getUri().getQuery());
     }
 
     @Test
     @Transactional
-    public void persistListeningHistory_only_history_after_most_recently_played_is_persisted() throws IOException, SpotifyWebApiException {
+    public void persistListeningHistoryForUser_only_history_after_most_recently_played_is_persisted()
+            throws IOException, SpotifyWebApiException {
+        AuthTokens authTokens = new AuthTokens(TESTER_USER_ID, "not relevant", TESTER_REFRESH_TOKEN);
+        MostRecentlyPlayedAt mostRecentlyPlayedAt = new MostRecentlyPlayedAt(TESTER_USER_ID, Timestamp.valueOf("2018-08-08 09:12:37"));
+        persistEntities(Lists.newArrayList(authTokens, mostRecentlyPlayedAt));
+
+        listeningHistoryService.persistListeningHistoryForUser(TESTER_USER_ID);
+        List<String> listeningHistoryTrackUris = Lists.newArrayList(listeningHistoryRepository.findAll())
+                .stream()
+                .map(ListeningHistory::getUri)
+                .collect(toList());
+
+        String trackAfterMostRecentlyPlayed  = "spotify:track:0D2NQGump2lZJpXMyGKE84";
+        String trackAtMostRecentlyPlayed     = "spotify:track:4t3iREL6SRks2dfrVxoI1E";
+        String trackBeforeMostRecentlyPlayed = "spotify:track:7vjxo27ux20F8mxCM3zICr";
+
+        assertThat(listeningHistoryTrackUris)
+                .as("History should contain track played after the last most recently played, and not tracks at or before")
+                .contains(trackAfterMostRecentlyPlayed)
+                .doesNotContain(trackAtMostRecentlyPlayed)
+                .doesNotContain(trackBeforeMostRecentlyPlayed);
+
+        Timestamp updatedMostRecentlyPlayedAt = mostRecentlyPlayedAtRepository
+                .findByUserId(TESTER_USER_ID)
+                .map(MostRecentlyPlayedAt::getPlayedAt)
+                .orElseThrow(() -> new RuntimeException("test user id not present in in-memory database"));
+
+        assertThat(updatedMostRecentlyPlayedAt)
+                .as("Most recently updated value should update to be after the last most recently played")
+                .isAfter(Timestamp.valueOf("2018-08-08 09:12:37"));
+    }
+
+    @Test
+    @Transactional
+    public void getListeningHistory_only_history_after_most_recently_played_is_persisted() throws IOException, SpotifyWebApiException {
         AuthTokens authTokens = new AuthTokens(TESTER_USER_ID, "not relevant", TESTER_REFRESH_TOKEN);
         MostRecentlyPlayedAt mostRecentlyPlayedAt = new MostRecentlyPlayedAt(TESTER_USER_ID, Timestamp.valueOf("2018-08-08 09:12:37"));
         persistEntities(Lists.newArrayList(authTokens, mostRecentlyPlayedAt));
