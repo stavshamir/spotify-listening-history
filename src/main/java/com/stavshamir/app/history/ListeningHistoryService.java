@@ -27,13 +27,14 @@ public interface ListeningHistoryService {
     void persistListeningHistoryForUser(String userId) throws IOException, SpotifyWebApiException;
 
     /**
-     * Return the persisted history after specified time.
+     * Return the persisted history before and after specified time.
      * @param userUri   the user's Spotify uri of format spotify::user::foo
      * @param after     only tracks played after the data and time specified by this variable will be returned
+     * @param before    only tracks played before the data and time specified by this variable will be returned
      * @param pageable
      * @return  A paginated listening history, including track data
      * @throws IOException
      * @throws SpotifyWebApiException
      */
-    Page<TrackDataWithPlayedAt> getListeningHistory(String userUri, Timestamp after, Pageable pageable) throws IOException, SpotifyWebApiException;
+    Page<TrackDataWithPlayedAt> getListeningHistory(String userUri, Timestamp after, Timestamp before, Pageable pageable) throws IOException, SpotifyWebApiException;
 }

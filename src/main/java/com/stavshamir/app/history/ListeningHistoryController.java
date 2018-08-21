@@ -37,12 +37,13 @@ public class ListeningHistoryController {
             Pageable pageable,
             @CookieValue("spotify-user-uri") String userUri,
             @RequestParam(required = false, defaultValue = "0") long after,
+            @RequestParam(required = false, defaultValue = "4000000000000") long before,
             HttpServletResponse response
     ) throws IOException, SpotifyWebApiException {
         response.addHeader("Access-Control-Allow-Credentials","true");
 
         listeningHistoryService.persistListeningHistoryForUser(userUri);
-        return listeningHistoryService.getListeningHistory(userUri, new Timestamp(after), pageable);
+        return listeningHistoryService.getListeningHistory(userUri, new Timestamp(after), new Timestamp(before), pageable);
     }
 
 }

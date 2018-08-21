@@ -3,6 +3,7 @@ package com.stavshamir.app.history;
 import com.stavshamir.app.authorization.AuthTokens;
 import com.stavshamir.app.authorization.AuthTokensService;
 import com.stavshamir.app.spotify.SpotifyClient;
+import com.stavshamir.app.track.TrackData;
 import com.stavshamir.app.track.TrackDataService;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import org.assertj.core.util.Lists;
@@ -12,6 +13,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -136,35 +138,54 @@ public class ListeningHistoryServiceImplIntegrationTest {
 
     @Test
     @Transactional
-    public void getListeningHistory_only_history_after_most_recently_played_is_persisted() throws IOException, SpotifyWebApiException {
-        AuthTokens authTokens = new AuthTokens(TESTER_USER_ID, "not relevant", TESTER_REFRESH_TOKEN);
-        MostRecentlyPlayedAt mostRecentlyPlayedAt = new MostRecentlyPlayedAt(TESTER_USER_ID, Timestamp.valueOf("2018-08-08 09:12:37"));
-        persistEntities(Lists.newArrayList(authTokens, mostRecentlyPlayedAt));
+    public void getListeningHistory() throws IOException, SpotifyWebApiException {
+        persistEntities(Lists.newArrayList(
+                // ListeningHistory
+                new ListeningHistory(TESTER_USER_ID, "1", new Timestamp(1000)),
+                new ListeningHistory(TESTER_USER_ID, "2", new Timestamp(2000)),
+                new ListeningHistory(TESTER_USER_ID, "3", new Timestamp(3000)),
 
-        listeningHistoryService.persistListeningHistory();
-        List<String> listeningHistoryTrackUris = Lists.newArrayList(listeningHistoryRepository.findAll())
-                .stream()
-                .map(ListeningHistory::getUri)
+                // TrackData
+                new TrackData("1", "foo1", null, "", ""),
+                new TrackData("2", "foo2", null, "", ""),
+                new TrackData("3", "foo3", null, "", "")
+        ));
+
+        assertThat(getHistoryTrackUris(0, 4000000000000L))
+                .as("History after 0 should contain all track uris")
+                .contains("1")
+                .contains("2")
+                .contains("3");
+
+        assertThat(getHistoryTrackUris(1000, 4000000000000L))
+                .as("History should contain only tracks uris after specified time")
+                .doesNotContain("1")
+                .contains("2")
+                .contains("3");
+
+        assertThat(getHistoryTrackUris(3000, 4000000000000L))
+                .as("History after the last recorded date should be an empty list")
+                .isEmpty();
+
+        assertThat(getHistoryTrackUris(0, 3000))
+                .as("History should contain only tracks uris before specified time")
+                .contains("1")
+                .contains("2")
+                .doesNotContain("3");
+
+        assertThat(getHistoryTrackUris(1000, 3000))
+                .as("History should contain only tracks uris between specified times")
+                .doesNotContain("1")
+                .contains("2")
+                .doesNotContain("3");
+    }
+
+    private List<String> getHistoryTrackUris(long after, long before) throws IOException, SpotifyWebApiException {
+        return listeningHistoryService
+                .getListeningHistory(TESTER_USER_ID, new Timestamp(after), new Timestamp(before), PageRequest.of(0, 3))
+                .getContent().stream()
+                .map(i -> i.getTrackData().getUri())
                 .collect(toList());
-
-        String trackAfterMostRecentlyPlayed  = "spotify:track:0D2NQGump2lZJpXMyGKE84";
-        String trackAtMostRecentlyPlayed     = "spotify:track:4t3iREL6SRks2dfrVxoI1E";
-        String trackBeforeMostRecentlyPlayed = "spotify:track:7vjxo27ux20F8mxCM3zICr";
-
-        assertThat(listeningHistoryTrackUris)
-                .as("History should contain track played after the last most recently played, and not tracks at or before")
-                .contains(trackAfterMostRecentlyPlayed)
-                .doesNotContain(trackAtMostRecentlyPlayed)
-                .doesNotContain(trackBeforeMostRecentlyPlayed);
-
-        Timestamp updatedMostRecentlyPlayedAt = mostRecentlyPlayedAtRepository
-                .findByUserId(TESTER_USER_ID)
-                .map(MostRecentlyPlayedAt::getPlayedAt)
-                .orElseThrow(() -> new RuntimeException("test user id not present in in-memory database"));
-
-        assertThat(updatedMostRecentlyPlayedAt)
-                .as("Most recently updated value should update to be after the last most recently played")
-                .isAfter(Timestamp.valueOf("2018-08-08 09:12:37"));
     }
 
     private void persistEntities(List<Object> entities) {

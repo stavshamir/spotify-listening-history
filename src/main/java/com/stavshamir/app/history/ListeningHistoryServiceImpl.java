@@ -108,8 +108,10 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
     }
 
     @Override
-    public Page<TrackDataWithPlayedAt> getListeningHistory(String userUri, Timestamp after, Pageable pageable) throws IOException, SpotifyWebApiException {
-        Page<ListeningHistory> listeningHistoryPage = listeningHistoryRepository.findAllByUserIdAndPlayedAtAfterOrderByPlayedAtDesc(userUri, after, pageable);
+    public Page<TrackDataWithPlayedAt> getListeningHistory(String userUri, Timestamp after, Timestamp before, Pageable pageable)
+            throws IOException, SpotifyWebApiException {
+        Page<ListeningHistory> listeningHistoryPage = listeningHistoryRepository
+                .findAllByUserIdAndPlayedAtAfterAndPlayedAtBeforeOrderByPlayedAtDesc(userUri, after, before, pageable);
         List<TrackDataWithPlayedAt> tracks = new ArrayList<>();
 
         for (ListeningHistory lh : listeningHistoryPage.getContent()) {
