@@ -16,7 +16,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 
+import javax.persistence.Tuple;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -120,6 +122,22 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
         }
 
         return new PageImpl<>(tracks, pageable, listeningHistoryPage.getTotalElements());
+    }
+
+    @Override
+    public List<TrackDataWithPlayCount> getMostPlayed(String userUri, int size, Timestamp after, Timestamp before)
+            throws IOException, SpotifyWebApiException {
+        List<TrackDataWithPlayCount> tracks = new ArrayList<>();
+
+        for (Tuple t : listeningHistoryRepository.findMostPlayed(userUri, after, before, size)) {
+            String uri = (String)t.get(0);
+            int count = ((BigInteger)t.get(1)).intValue();
+
+            TrackData trackData = trackDataService.getTrackData(uri, userUri);
+            tracks.add(new TrackDataWithPlayCount(trackData, count));
+        }
+
+        return tracks;
     }
 
 }

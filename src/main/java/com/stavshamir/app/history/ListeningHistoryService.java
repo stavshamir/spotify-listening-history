@@ -7,8 +7,10 @@ import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.List;
 
 public interface ListeningHistoryService {
+
     GetCurrentUsersRecentlyPlayedTracksRequest buildGetCurrentUsersRecentlyPlayedTracksRequest(String userId);
 
     /**
@@ -37,4 +39,17 @@ public interface ListeningHistoryService {
      * @throws SpotifyWebApiException
      */
     Page<TrackDataWithPlayedAt> getListeningHistory(String userUri, Timestamp after, Timestamp before, Pageable pageable) throws IOException, SpotifyWebApiException;
+
+    /**
+     * Return the most played tracks' data and play count.
+     * @param userUri   the user's Spotify uri of format spotify::user::foo
+     * @param size      the size of list to be returned
+     * @param after     only tracks played at and after the data and time specified by this variable will be returned
+     * @param before    only tracks played before the data and time specified by this variable will be returned
+     * @return          the most played tracks' data and play count
+     * @throws IOException
+     * @throws SpotifyWebApiException
+     */
+    List<TrackDataWithPlayCount> getMostPlayed(String userUri, int size, Timestamp after, Timestamp before) throws IOException, SpotifyWebApiException;
+
 }

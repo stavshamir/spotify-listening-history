@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.List;
 
 @RestController
 @RequestMapping("/listening-history")
@@ -44,6 +45,20 @@ public class ListeningHistoryController {
 
         listeningHistoryService.persistListeningHistoryForUser(userUri);
         return listeningHistoryService.getListeningHistory(userUri, new Timestamp(after), new Timestamp(before), pageable);
+    }
+
+    @RequestMapping("/most-played")
+    public List<TrackDataWithPlayCount> mostPlayed(
+            @CookieValue("spotify-user-uri") String userUri,
+            @RequestParam(required = false, defaultValue = "20") int size,
+            @RequestParam(required = false, defaultValue = "0") long after,
+            @RequestParam(required = false, defaultValue = "4000000000000") long before,
+            HttpServletResponse response
+    ) throws IOException, SpotifyWebApiException {
+        response.addHeader("Access-Control-Allow-Credentials","true");
+
+        listeningHistoryService.persistListeningHistoryForUser(userUri);
+        return listeningHistoryService.getMostPlayed(userUri, Math.min(size, 25), new Timestamp(after), new Timestamp(before));
     }
 
 }

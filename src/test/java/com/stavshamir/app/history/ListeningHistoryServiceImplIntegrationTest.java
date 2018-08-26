@@ -188,6 +188,63 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .collect(toList());
     }
 
+    @Test
+    @Transactional
+    public void getMostPlayed() throws IOException, SpotifyWebApiException {
+        final TrackData track1 = new TrackData("1", "foo1", null, "", "");
+        final TrackData track2 = new TrackData("2", "foo2", null, "", "");
+        final TrackData track3 = new TrackData("3", "foo3", null, "", "");
+
+        persistEntities(Lists.newArrayList(
+                // ListeningHistory
+                new ListeningHistory(TESTER_USER_ID, "1", new Timestamp(1000)),
+                new ListeningHistory(TESTER_USER_ID, "1", new Timestamp(1100)),
+                new ListeningHistory(TESTER_USER_ID, "1", new Timestamp(1200)),
+                new ListeningHistory(TESTER_USER_ID, "2", new Timestamp(2000)),
+                new ListeningHistory(TESTER_USER_ID, "2", new Timestamp(2100)),
+                new ListeningHistory(TESTER_USER_ID, "3", new Timestamp(3000)),
+
+                // TrackData
+                track1,
+                track2,
+                track3
+        ));
+
+        assertThat(getMostPlayed(3, 0, 4000))
+                .hasSize(3)
+                .contains(new TrackDataWithPlayCount(track1, 3))
+                .contains(new TrackDataWithPlayCount(track2, 2))
+                .contains(new TrackDataWithPlayCount(track3, 1));
+
+        assertThat(getMostPlayed(5, 0, 4000))
+                .as("Called with a size higher than actual number of elements")
+                .hasSize(3)
+                .contains(new TrackDataWithPlayCount(track1, 3))
+                .contains(new TrackDataWithPlayCount(track2, 2))
+                .contains(new TrackDataWithPlayCount(track3, 1));
+
+        assertThat(getMostPlayed(1, 0, 4000))
+                .as("Called with a size lower than actual number of elements")
+                .hasSize(1)
+                .contains(new TrackDataWithPlayCount(track1, 3));
+
+        assertThat(getMostPlayed(3, 1150, 4000))
+                .as("Custom after parameter")
+                .hasSize(3)
+                .contains(new TrackDataWithPlayCount(track1, 1))
+                .contains(new TrackDataWithPlayCount(track2, 2))
+                .contains(new TrackDataWithPlayCount(track3, 1));
+
+        assertThat(getMostPlayed(3, 0, 1200))
+                .as("Custom before parameter")
+                .hasSize(1)
+                .contains(new TrackDataWithPlayCount(track1, 2));
+    }
+
+    private List<TrackDataWithPlayCount> getMostPlayed(int size, long after, long before) throws IOException, SpotifyWebApiException {
+        return listeningHistoryService.getMostPlayed(TESTER_USER_ID, size, new Timestamp(after), new Timestamp(before));
+    }
+
     private void persistEntities(List<Object> entities) {
         entities.forEach(entityManager::persist);
         entityManager.flush();
