@@ -51,8 +51,10 @@ public class ListeningHistoryController {
     public List<TrackDataWithPlayCount> mostPlayed(
             @CookieValue("spotify-user-uri") String userUri,
             @RequestParam(required = false) Integer size,
-            @RequestParam(required = false) Long after,
-            @RequestParam(required = false) Long before,
+            @RequestParam(required = false) Long after,        @RequestParam(required = false) Long before,
+            @RequestParam(required = false) Integer fromYear,  @RequestParam(required = false) Integer toYear,
+            @RequestParam(required = false) Integer fromMonth, @RequestParam(required = false) Integer toMonth,
+            @RequestParam(required = false) Integer fromHour,  @RequestParam(required = false) Integer toHour,
             HttpServletResponse response
     ) throws IOException, SpotifyWebApiException {
         response.addHeader("Access-Control-Allow-Credentials","true");
@@ -61,8 +63,10 @@ public class ListeningHistoryController {
 
         GetMostPlayedQuery query = GetMostPlayedQuery.builder(userUri)
                 .size(size)
-                .after(after)
-                .before(before)
+                .after(after).before(before)
+                .fromYear(fromYear).toYear(toYear)
+                .fromMonth(fromMonth).toMonth(toMonth)
+                .fromHour(fromHour).toHour(toHour)
                 .build();
 
         return listeningHistoryService.getMostPlayed(query);

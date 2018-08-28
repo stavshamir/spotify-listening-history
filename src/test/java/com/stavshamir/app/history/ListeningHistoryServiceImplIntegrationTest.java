@@ -251,10 +251,9 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .contains(new TrackDataWithPlayCount(track1, 3));
     }
 
-
     @Test
     @Transactional
-    public void getMostPlayed_after_and_from() throws IOException, SpotifyWebApiException {
+    public void getMostPlayed_after_and_before() throws IOException, SpotifyWebApiException {
         final TrackData track1 = new TrackData("1", "foo1", null, "", "");
         final TrackData track2 = new TrackData("2", "foo2", null, "", "");
         final TrackData track3 = new TrackData("3", "foo3", null, "", "");
@@ -293,6 +292,173 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .as("Custom before parameter")
                 .hasSize(1)
                 .contains(new TrackDataWithPlayCount(track1, 2));
+    }
+
+    @Test
+    @Transactional
+    public void getMostPlayed_fromYear_and_toYear() throws IOException, SpotifyWebApiException {
+        final TrackData track1 = new TrackData("1", "foo1", null, "", "");
+        final TrackData track2 = new TrackData("2", "foo2", null, "", "");
+        final TrackData track3 = new TrackData("3", "foo3", null, "", "");
+
+        persistEntities(Lists.newArrayList(
+                // ListeningHistory
+                new ListeningHistory(TESTER_USER_ID, "1", Timestamp.valueOf("2015-01-01 00:00:00")),
+                new ListeningHistory(TESTER_USER_ID, "1", Timestamp.valueOf("2017-01-01 00:00:00")),
+                new ListeningHistory(TESTER_USER_ID, "1", Timestamp.valueOf("2018-01-01 00:00:00")),
+                new ListeningHistory(TESTER_USER_ID, "2", Timestamp.valueOf("2018-01-01 00:00:00")),
+                new ListeningHistory(TESTER_USER_ID, "2", Timestamp.valueOf("2018-01-01 00:00:00")),
+                new ListeningHistory(TESTER_USER_ID, "3", Timestamp.valueOf("2017-01-01 00:00:00")),
+
+                // TrackData
+                track1,
+                track2,
+                track3
+        ));
+
+        GetMostPlayedQuery query = GetMostPlayedQuery.builder(TESTER_USER_ID)
+                .fromYear(2017)
+                .build();
+
+        assertThat(listeningHistoryService.getMostPlayed(query))
+                .as("From year")
+                .hasSize(3)
+                .contains(new TrackDataWithPlayCount(track1, 2))
+                .contains(new TrackDataWithPlayCount(track2, 2))
+                .contains(new TrackDataWithPlayCount(track3, 1));
+
+        query = GetMostPlayedQuery.builder(TESTER_USER_ID)
+                .toYear(2017)
+                .build();
+
+        assertThat(listeningHistoryService.getMostPlayed(query))
+                .as("To year")
+                .hasSize(1)
+                .contains(new TrackDataWithPlayCount(track1, 1));
+
+        query = GetMostPlayedQuery.builder(TESTER_USER_ID)
+                .fromYear(2016)
+                .toYear(2019)
+                .build();
+
+        assertThat(listeningHistoryService.getMostPlayed(query))
+                .as("Between years")
+                .hasSize(3)
+                .contains(new TrackDataWithPlayCount(track1, 2))
+                .contains(new TrackDataWithPlayCount(track2, 2))
+                .contains(new TrackDataWithPlayCount(track3, 1));
+    }
+
+    @Test
+    @Transactional
+    public void getMostPlayed_fromMonth_and_toMonth() throws IOException, SpotifyWebApiException {
+        final TrackData track1 = new TrackData("1", "foo1", null, "", "");
+        final TrackData track2 = new TrackData("2", "foo2", null, "", "");
+        final TrackData track3 = new TrackData("3", "foo3", null, "", "");
+
+        persistEntities(Lists.newArrayList(
+                // ListeningHistory
+                new ListeningHistory(TESTER_USER_ID, "1", Timestamp.valueOf("2015-01-01 00:00:00")),
+                new ListeningHistory(TESTER_USER_ID, "1", Timestamp.valueOf("2017-02-01 00:00:00")),
+                new ListeningHistory(TESTER_USER_ID, "1", Timestamp.valueOf("2018-03-01 00:00:00")),
+                new ListeningHistory(TESTER_USER_ID, "2", Timestamp.valueOf("2018-01-01 00:00:00")),
+                new ListeningHistory(TESTER_USER_ID, "2", Timestamp.valueOf("2018-02-01 00:00:00")),
+                new ListeningHistory(TESTER_USER_ID, "3", Timestamp.valueOf("2017-03-01 00:00:00")),
+
+                // TrackData
+                track1,
+                track2,
+                track3
+        ));
+
+        GetMostPlayedQuery query = GetMostPlayedQuery.builder(TESTER_USER_ID)
+                .fromMonth(2)
+                .build();
+
+        assertThat(listeningHistoryService.getMostPlayed(query))
+                .as("From month")
+                .hasSize(3)
+                .contains(new TrackDataWithPlayCount(track1, 2))
+                .contains(new TrackDataWithPlayCount(track2, 1))
+                .contains(new TrackDataWithPlayCount(track3, 1));
+
+        query = GetMostPlayedQuery.builder(TESTER_USER_ID)
+                .toMonth(2)
+                .build();
+
+        assertThat(listeningHistoryService.getMostPlayed(query))
+                .as("To month")
+                .hasSize(2)
+                .contains(new TrackDataWithPlayCount(track1, 1))
+                .contains(new TrackDataWithPlayCount(track2, 1));
+
+        query = GetMostPlayedQuery.builder(TESTER_USER_ID)
+                .fromMonth(2)
+                .toMonth(4)
+                .build();
+
+        assertThat(listeningHistoryService.getMostPlayed(query))
+                .as("Between months")
+                .hasSize(3)
+                .contains(new TrackDataWithPlayCount(track1, 2))
+                .contains(new TrackDataWithPlayCount(track2, 1))
+                .contains(new TrackDataWithPlayCount(track3, 1));
+    }
+
+    @Test
+    @Transactional
+    public void getMostPlayed_fromHour_and_toHour() throws IOException, SpotifyWebApiException {
+        final TrackData track1 = new TrackData("1", "foo1", null, "", "");
+        final TrackData track2 = new TrackData("2", "foo2", null, "", "");
+        final TrackData track3 = new TrackData("3", "foo3", null, "", "");
+
+        persistEntities(Lists.newArrayList(
+                // ListeningHistory
+                new ListeningHistory(TESTER_USER_ID, "1", Timestamp.valueOf("2015-01-01 02:00:00")),
+                new ListeningHistory(TESTER_USER_ID, "1", Timestamp.valueOf("2017-02-01 01:00:00")),
+                new ListeningHistory(TESTER_USER_ID, "1", Timestamp.valueOf("2018-03-01 05:00:00")),
+                new ListeningHistory(TESTER_USER_ID, "2", Timestamp.valueOf("2018-01-01 02:30:00")),
+                new ListeningHistory(TESTER_USER_ID, "2", Timestamp.valueOf("2018-02-01 03:00:00")),
+                new ListeningHistory(TESTER_USER_ID, "3", Timestamp.valueOf("2017-03-01 07:00:00")),
+
+                // TrackData
+                track1,
+                track2,
+                track3
+        ));
+
+        GetMostPlayedQuery query = GetMostPlayedQuery.builder(TESTER_USER_ID)
+                .fromHour(2)
+                .build();
+
+        assertThat(listeningHistoryService.getMostPlayed(query))
+                .as("From hour")
+                .hasSize(3)
+                .contains(new TrackDataWithPlayCount(track1, 2))
+                .contains(new TrackDataWithPlayCount(track2, 2))
+                .contains(new TrackDataWithPlayCount(track3, 1));
+
+        query = GetMostPlayedQuery.builder(TESTER_USER_ID)
+                .toHour(5)
+                .build();
+
+        assertThat(listeningHistoryService.getMostPlayed(query))
+                .as("To hour")
+                .hasSize(2)
+                .contains(new TrackDataWithPlayCount(track1, 2))
+                .contains(new TrackDataWithPlayCount(track2, 2));
+
+        query = GetMostPlayedQuery.builder(TESTER_USER_ID)
+                .fromHour(3)
+                .toHour(12)
+                .build();
+
+        assertThat(listeningHistoryService.getMostPlayed(query))
+                .as("Between hours")
+                .hasSize(3)
+                .contains(new TrackDataWithPlayCount(track1, 1))
+                .contains(new TrackDataWithPlayCount(track2, 1))
+                .contains(new TrackDataWithPlayCount(track3, 1));
     }
 
     private void persistEntities(List<Object> entities) {

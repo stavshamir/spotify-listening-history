@@ -130,8 +130,11 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
 
         List<Tuple> tuples = listeningHistoryRepository.findMostPlayed(
                 query.getUserUri(),
+                query.getSize(),
                 query.getAfter(), query.getBefore(),
-                query.getSize()
+                query.getFromYear(), query.getToYear(),
+                query.getFromMonth(), query.getToMonth(),
+                query.getFromHour(), query.getToHour()
         );
 
         for (Tuple t : tuples) {
