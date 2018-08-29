@@ -4,7 +4,6 @@ import java.sql.Timestamp;
 
 public class GetMostPlayedQuery {
 
-    private static final int DEFAULT_SIZE = 25;
     private static final Timestamp DEFAULT_AFTER = new Timestamp(0);
     private static final Timestamp DEFAULT_BEFORE = Timestamp.valueOf("2100-01-01 00:00:00");
     private static final int DEFAULT_FROM_YEAR = 0;
@@ -15,7 +14,6 @@ public class GetMostPlayedQuery {
     private static final int DEFAULT_TO_HOUR = 13;
 
     private String userUri;
-    private int size;
     private Timestamp after;
     private Timestamp before;
     private int fromYear;
@@ -25,9 +23,8 @@ public class GetMostPlayedQuery {
     private int fromHour;
     private int toHour;
 
-    private GetMostPlayedQuery(String userUri, int size, Timestamp after, Timestamp before, int fromYear, int toYear, int fromMonth, int toMonth, int fromHour, int toHour) {
+    private GetMostPlayedQuery(String userUri, Timestamp after, Timestamp before, int fromYear, int toYear, int fromMonth, int toMonth, int fromHour, int toHour) {
         this.userUri = userUri;
-        this.size = size;
         this.after = after;
         this.before = before;
         this.fromYear = fromYear;
@@ -40,10 +37,6 @@ public class GetMostPlayedQuery {
 
     String getUserUri() {
         return userUri;
-    }
-
-    int getSize() {
-        return size;
     }
 
     Timestamp getAfter() {
@@ -85,7 +78,6 @@ public class GetMostPlayedQuery {
     public static class Builder {
 
         private String userUri;
-        private int size = DEFAULT_SIZE;
         private Timestamp after = DEFAULT_AFTER;
         private Timestamp before = DEFAULT_BEFORE;
         private int fromYear = DEFAULT_FROM_YEAR;
@@ -97,11 +89,6 @@ public class GetMostPlayedQuery {
 
         private Builder(String userUri) {
             this.userUri = userUri;
-        }
-
-        public Builder size(Integer size) {
-            this.size = size == null ? DEFAULT_SIZE : size;
-            return this;
         }
 
         public Builder after(Timestamp after) {
@@ -153,7 +140,7 @@ public class GetMostPlayedQuery {
         }
 
         public GetMostPlayedQuery build() {
-            return new GetMostPlayedQuery(userUri, size, after, before, fromYear, toYear, fromMonth, toMonth, fromHour, toHour);
+            return new GetMostPlayedQuery(userUri, after, before, fromYear, toYear, fromMonth, toMonth, fromHour, toHour);
         }
 
     }

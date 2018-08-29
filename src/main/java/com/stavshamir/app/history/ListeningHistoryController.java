@@ -48,9 +48,9 @@ public class ListeningHistoryController {
     }
 
     @RequestMapping("/most-played")
-    public List<TrackDataWithPlayCount> mostPlayed(
+    public Page<TrackDataWithPlayCount> mostPlayed(
+            Pageable pageable,
             @CookieValue("spotify-user-uri") String userUri,
-            @RequestParam(required = false) Integer size,
             @RequestParam(required = false) Long after,        @RequestParam(required = false) Long before,
             @RequestParam(required = false) Integer fromYear,  @RequestParam(required = false) Integer toYear,
             @RequestParam(required = false) Integer fromMonth, @RequestParam(required = false) Integer toMonth,
@@ -62,14 +62,13 @@ public class ListeningHistoryController {
         listeningHistoryService.persistListeningHistoryForUser(userUri);
 
         GetMostPlayedQuery query = GetMostPlayedQuery.builder(userUri)
-                .size(size)
                 .after(after).before(before)
                 .fromYear(fromYear).toYear(toYear)
                 .fromMonth(fromMonth).toMonth(toMonth)
                 .fromHour(fromHour).toHour(toHour)
                 .build();
 
-        return listeningHistoryService.getMostPlayed(query);
+        return listeningHistoryService.getMostPlayed(query, pageable);
     }
 
 }

@@ -47,6 +47,6 @@ public interface ListeningHistoryService {
      * @throws IOException
      * @throws SpotifyWebApiException
      */
-    List<TrackDataWithPlayCount> getMostPlayed(GetMostPlayedQuery getMostPlayedQuery) throws IOException, SpotifyWebApiException;
+    Page<TrackDataWithPlayCount> getMostPlayed(GetMostPlayedQuery getMostPlayedQuery, Pageable pageable) throws IOException, SpotifyWebApiException;
 
 }

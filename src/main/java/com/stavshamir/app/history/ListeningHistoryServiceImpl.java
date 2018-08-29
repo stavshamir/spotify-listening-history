@@ -125,26 +125,26 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
     }
 
     @Override
-    public List<TrackDataWithPlayCount> getMostPlayed(GetMostPlayedQuery query) throws IOException, SpotifyWebApiException {
+    public Page<TrackDataWithPlayCount> getMostPlayed(GetMostPlayedQuery query, Pageable pageable) throws IOException, SpotifyWebApiException {
         List<TrackDataWithPlayCount> tracks = new ArrayList<>();
 
-        List<Tuple> tuples = listeningHistoryRepository.findMostPlayed(
+        Page<Object[]> page = listeningHistoryRepository.findMostPlayed(
                 query.getUserUri(),
-                query.getSize(),
                 query.getAfter(), query.getBefore(),
                 query.getFromYear(), query.getToYear(),
                 query.getFromMonth(), query.getToMonth(),
-                query.getFromHour(), query.getToHour()
+                query.getFromHour(), query.getToHour(),
+                pageable
         );
 
-        for (Tuple t : tuples) {
-            String uri = (String)t.get(0);
-            int count = ((BigInteger)t.get(1)).intValue();
+        for (Object[] o : page) {
+            String uri = (String)o[0];
+            int count = ((BigInteger)o[1]).intValue();
 
             TrackData trackData = trackDataService.getTrackData(uri, query.getUserUri());
             tracks.add(new TrackDataWithPlayCount(trackData, count));
         }
 
-        return tracks;
+        return new PageImpl<>(tracks, pageable, page.getTotalElements());
     }
 }

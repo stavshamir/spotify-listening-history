@@ -183,72 +183,9 @@ public class ListeningHistoryServiceImplIntegrationTest {
     private List<String> getHistoryTrackUris(long after, long before) throws IOException, SpotifyWebApiException {
         return listeningHistoryService
                 .getListeningHistory(TESTER_USER_ID, new Timestamp(after), new Timestamp(before), PageRequest.of(0, 3))
-                .getContent().stream()
+                .stream()
                 .map(i -> i.getTrackData().getUri())
                 .collect(toList());
-    }
-
-    @Test
-    @Transactional
-    public void getMostPlayed_size_limits() throws IOException, SpotifyWebApiException {
-        final TrackData track1 = new TrackData("1", "foo1", null, "", "");
-        final TrackData track2 = new TrackData("2", "foo2", null, "", "");
-        final TrackData track3 = new TrackData("3", "foo3", null, "", "");
-
-        persistEntities(Lists.newArrayList(
-                // ListeningHistory
-                new ListeningHistory(TESTER_USER_ID, "1", new Timestamp(1000)),
-                new ListeningHistory(TESTER_USER_ID, "1", new Timestamp(1100)),
-                new ListeningHistory(TESTER_USER_ID, "1", new Timestamp(1200)),
-                new ListeningHistory(TESTER_USER_ID, "2", new Timestamp(2000)),
-                new ListeningHistory(TESTER_USER_ID, "2", new Timestamp(2100)),
-                new ListeningHistory(TESTER_USER_ID, "3", new Timestamp(3000)),
-
-                // TrackData
-                track1,
-                track2,
-                track3
-        ));
-
-        GetMostPlayedQuery query = GetMostPlayedQuery.builder(TESTER_USER_ID)
-                .build();
-
-        assertThat(listeningHistoryService.getMostPlayed(query))
-                .as("Default size assigned correctly")
-                .hasSize(3)
-                .contains(new TrackDataWithPlayCount(track1, 3))
-                .contains(new TrackDataWithPlayCount(track2, 2))
-                .contains(new TrackDataWithPlayCount(track3, 1));
-
-        query = GetMostPlayedQuery.builder(TESTER_USER_ID)
-                .size(3)
-                .build();
-
-        assertThat(listeningHistoryService.getMostPlayed(query))
-                .hasSize(3)
-                .contains(new TrackDataWithPlayCount(track1, 3))
-                .contains(new TrackDataWithPlayCount(track2, 2))
-                .contains(new TrackDataWithPlayCount(track3, 1));
-
-         query = GetMostPlayedQuery.builder(TESTER_USER_ID)
-                .size(5)
-                .build();
-
-        assertThat(listeningHistoryService.getMostPlayed(query))
-                .as("Called with a size higher than actual number of elements")
-                .hasSize(3)
-                .contains(new TrackDataWithPlayCount(track1, 3))
-                .contains(new TrackDataWithPlayCount(track2, 2))
-                .contains(new TrackDataWithPlayCount(track3, 1));
-
-        query = GetMostPlayedQuery.builder(TESTER_USER_ID)
-                .size(1)
-                .build();
-
-        assertThat(listeningHistoryService.getMostPlayed(query))
-                .as("Called with a size lower than actual number of elements")
-                .hasSize(1)
-                .contains(new TrackDataWithPlayCount(track1, 3));
     }
 
     @Test
@@ -273,11 +210,13 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 track3
         ));
 
+        final PageRequest pageable = PageRequest.of(0, 3);
+
         GetMostPlayedQuery query = GetMostPlayedQuery.builder(TESTER_USER_ID)
                 .after(1150L)
                 .build();
 
-        assertThat(listeningHistoryService.getMostPlayed(query))
+        assertThat(listeningHistoryService.getMostPlayed(query, pageable))
                 .as("Custom after parameter")
                 .hasSize(3)
                 .contains(new TrackDataWithPlayCount(track1, 1))
@@ -288,7 +227,7 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .before(1200L)
                 .build();
 
-        assertThat(listeningHistoryService.getMostPlayed(query))
+        assertThat(listeningHistoryService.getMostPlayed(query, pageable))
                 .as("Custom before parameter")
                 .hasSize(1)
                 .contains(new TrackDataWithPlayCount(track1, 2));
@@ -316,11 +255,13 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 track3
         ));
 
+        final PageRequest pageable = PageRequest.of(0, 3);
+
         GetMostPlayedQuery query = GetMostPlayedQuery.builder(TESTER_USER_ID)
                 .fromYear(2017)
                 .build();
 
-        assertThat(listeningHistoryService.getMostPlayed(query))
+        assertThat(listeningHistoryService.getMostPlayed(query, pageable))
                 .as("From year")
                 .hasSize(3)
                 .contains(new TrackDataWithPlayCount(track1, 2))
@@ -331,7 +272,7 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .toYear(2017)
                 .build();
 
-        assertThat(listeningHistoryService.getMostPlayed(query))
+        assertThat(listeningHistoryService.getMostPlayed(query, pageable))
                 .as("To year")
                 .hasSize(1)
                 .contains(new TrackDataWithPlayCount(track1, 1));
@@ -341,7 +282,7 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .toYear(2019)
                 .build();
 
-        assertThat(listeningHistoryService.getMostPlayed(query))
+        assertThat(listeningHistoryService.getMostPlayed(query, pageable))
                 .as("Between years")
                 .hasSize(3)
                 .contains(new TrackDataWithPlayCount(track1, 2))
@@ -371,11 +312,13 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 track3
         ));
 
+        final PageRequest pageable = PageRequest.of(0, 3);
+
         GetMostPlayedQuery query = GetMostPlayedQuery.builder(TESTER_USER_ID)
                 .fromMonth(2)
                 .build();
 
-        assertThat(listeningHistoryService.getMostPlayed(query))
+        assertThat(listeningHistoryService.getMostPlayed(query, pageable))
                 .as("From month")
                 .hasSize(3)
                 .contains(new TrackDataWithPlayCount(track1, 2))
@@ -386,7 +329,7 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .toMonth(2)
                 .build();
 
-        assertThat(listeningHistoryService.getMostPlayed(query))
+        assertThat(listeningHistoryService.getMostPlayed(query, pageable))
                 .as("To month")
                 .hasSize(2)
                 .contains(new TrackDataWithPlayCount(track1, 1))
@@ -397,7 +340,7 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .toMonth(4)
                 .build();
 
-        assertThat(listeningHistoryService.getMostPlayed(query))
+        assertThat(listeningHistoryService.getMostPlayed(query, pageable))
                 .as("Between months")
                 .hasSize(3)
                 .contains(new TrackDataWithPlayCount(track1, 2))
@@ -431,7 +374,7 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .fromHour(2)
                 .build();
 
-        assertThat(listeningHistoryService.getMostPlayed(query))
+        assertThat(listeningHistoryService.getMostPlayed(query, PageRequest.of(0, 3)))
                 .as("From hour")
                 .hasSize(3)
                 .contains(new TrackDataWithPlayCount(track1, 2))
@@ -442,7 +385,7 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .toHour(5)
                 .build();
 
-        assertThat(listeningHistoryService.getMostPlayed(query))
+        assertThat(listeningHistoryService.getMostPlayed(query, PageRequest.of(0, 3)))
                 .as("To hour")
                 .hasSize(2)
                 .contains(new TrackDataWithPlayCount(track1, 2))
@@ -453,7 +396,7 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .toHour(12)
                 .build();
 
-        assertThat(listeningHistoryService.getMostPlayed(query))
+        assertThat(listeningHistoryService.getMostPlayed(query, PageRequest.of(0, 3)))
                 .as("Between hours")
                 .hasSize(3)
                 .contains(new TrackDataWithPlayCount(track1, 1))
