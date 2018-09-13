@@ -87,13 +87,8 @@ public class AuthTokensServiceImpl implements AuthTokensService {
     }
 
     private void refreshAuthorization(String userId) {
-        try {
-            spotifyClient.getSpotifyApi()
-                    .setRefreshToken(getRefreshToken(userId));
-        } catch (NoAuthTokensProvidedException e) {
-            logger.error("Failed to get refresh token");
-            return;
-        }
+        spotifyClient.getSpotifyApi()
+                .setRefreshToken(getRefreshToken(userId));
 
         AuthorizationCodeRefreshRequest refreshRequest = spotifyClient
                 .getSpotifyApi()
