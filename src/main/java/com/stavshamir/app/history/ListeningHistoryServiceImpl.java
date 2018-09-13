@@ -15,15 +15,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
+import org.springframework.util.ConcurrentReferenceHashMap;
 
-import javax.persistence.Tuple;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static java.util.stream.Collectors.toList;
 
@@ -39,6 +36,8 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
     private final ListeningHistoryRepository listeningHistoryRepository;
     private final MostRecentlyPlayedAtRepository mostRecentlyPlayedAtRepository;
     private final TrackDataService trackDataService;
+
+    private final Map<String, Object> usersLocks = new ConcurrentReferenceHashMap<>();
 
     @Autowired
     public ListeningHistoryServiceImpl(SpotifyClient spotifyClient, AuthTokensService authTokensService, ListeningHistoryRepository listeningHistoryRepository, MostRecentlyPlayedAtRepository mostRecentlyPlayedAtRepository, TrackDataService trackDataService) {
@@ -74,19 +73,31 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
     @Override
     public void persistListeningHistoryForUser(String userId) throws IOException, SpotifyWebApiException {
         logger.info("Pulling listening history from Spotify for " + userId);
+        List<ListeningHistory> history;
 
+        usersLocks.putIfAbsent(userId, new Object());
+        synchronized(usersLocks.get(userId)) {
+            history = getListeningHistoryFromSpotify(userId);
+            updateMostRecentlyPlayedAt(userId, history);
+        }
+
+        listeningHistoryRepository.saveAll(history);
+        logger.info(history.size() + " tracks persisted");
+    }
+
+    private List<ListeningHistory> getListeningHistoryFromSpotify(String userId) throws IOException, SpotifyWebApiException {
         PagingCursorbased<PlayHistory> tracks = buildGetCurrentUsersRecentlyPlayedTracksRequest(userId).execute();
-
-        List<ListeningHistory> history = Arrays.stream(tracks.getItems())
+        return Arrays.stream(tracks.getItems())
                 .map(item -> fromPlayHistoryItem(userId, item))
                 .collect(toList());
+    }
 
+    private void updateMostRecentlyPlayedAt(String userId, List<ListeningHistory> history) {
         if (!history.isEmpty()) {
-            persistMostRecentlyPlayedAt(userId, history.get(0).getPlayedAt());
-            listeningHistoryRepository.saveAll(history);
-            logger.info(history.size() + " tracks persisted");
-        } else {
-            logger.info("There were no new tracks to persist");
+            Timestamp mostRecentlyPlayedAt = history.get(0)
+                    .getPlayedAt();
+
+            persistMostRecentlyPlayedAt(userId, mostRecentlyPlayedAt);
         }
     }
 
