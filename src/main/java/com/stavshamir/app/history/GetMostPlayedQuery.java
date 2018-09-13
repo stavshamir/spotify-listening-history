@@ -11,7 +11,7 @@ public class GetMostPlayedQuery {
     private static final int DEFAULT_FROM_MONTH = 1;
     private static final int DEFAULT_TO_MONTH = 13;
     private static final int DEFAULT_FROM_HOUR = 0;
-    private static final int DEFAULT_TO_HOUR = 13;
+    private static final int DEFAULT_TO_HOUR = 24;
 
     private String userUri;
     private Timestamp after;
