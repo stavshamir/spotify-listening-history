@@ -13,7 +13,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class Application {
 
     @Value("${allowed-origins.listening-history.get}")
-    private String listeningHistoryGetAllowedOrigins;
+    private String[] listeningHistoryGetAllowedOrigins;
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
