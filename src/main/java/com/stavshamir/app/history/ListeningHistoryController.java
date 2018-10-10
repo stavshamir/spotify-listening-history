@@ -39,11 +39,15 @@ public class ListeningHistoryController {
             @CookieValue("spotify-user-uri") String userUri,
             @RequestParam(required = false, defaultValue = "0") long after,
             @RequestParam(required = false, defaultValue = "4000000000000") long before,
+            @RequestParam(required = false, defaultValue = "false") boolean update,
             HttpServletResponse response
     ) throws IOException, SpotifyWebApiException {
         response.addHeader("Access-Control-Allow-Credentials","true");
 
-        listeningHistoryService.persistListeningHistoryForUser(userUri);
+        if (update) {
+            listeningHistoryService.persistListeningHistoryForUser(userUri);
+        }
+
         return listeningHistoryService.getListeningHistory(userUri, new Timestamp(after), new Timestamp(before), pageable);
     }
 
@@ -55,11 +59,14 @@ public class ListeningHistoryController {
             @RequestParam(required = false) Integer fromYear,  @RequestParam(required = false) Integer toYear,
             @RequestParam(required = false) Integer fromMonth, @RequestParam(required = false) Integer toMonth,
             @RequestParam(required = false) Integer fromHour,  @RequestParam(required = false) Integer toHour,
+            @RequestParam(required = false, defaultValue = "false") boolean update,
             HttpServletResponse response
     ) throws IOException, SpotifyWebApiException {
         response.addHeader("Access-Control-Allow-Credentials","true");
 
-        listeningHistoryService.persistListeningHistoryForUser(userUri);
+        if (update) {
+            listeningHistoryService.persistListeningHistoryForUser(userUri);
+        }
 
         GetMostPlayedQuery query = GetMostPlayedQuery.builder(userUri)
                 .after(after).before(before)
