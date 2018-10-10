@@ -25,6 +25,8 @@ public class Application {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/listening-history/get").allowedOrigins(listeningHistoryGetAllowedOrigins);
+                registry.addMapping("/listening-history/most-played").allowedOrigins(listeningHistoryGetAllowedOrigins);
+                registry.addMapping("/authorize").allowedOrigins(listeningHistoryGetAllowedOrigins);
             }
         };
     }
