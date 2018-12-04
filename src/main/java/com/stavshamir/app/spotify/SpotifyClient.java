@@ -3,20 +3,25 @@ package com.stavshamir.app.spotify;
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.SpotifyHttpManager;
 import org.springframework.stereotype.Component;
-
-import java.net.URI;
+import java.util.Optional;
 
 @Component
 public class SpotifyClient {
 
-    private static final String CLIENT_ID     = System.getenv("CLIENT_ID");
-    private static final String CLIENT_SECRET = System.getenv("CLIENT_SECRET");
-    private static final URI    REDIRECT_URI  = SpotifyHttpManager.makeUri(System.getenv("REDIRECT_URI"));
+    private static final String CLIENT_ID     = getEnvSafely("CLIENT_ID");
+    private static final String CLIENT_SECRET = getEnvSafely("CLIENT_SECRET");
+    private static final String REDIRECT_URI  = getEnvSafely("REDIRECT_URI");
+
+    private static String getEnvSafely(String envVariableName) {
+        return Optional
+                .ofNullable(System.getenv(envVariableName))
+                .orElseThrow(() -> new IllegalStateException("No " + envVariableName + " environment variable"));
+    }
 
     private final SpotifyApi spotifyApi = new SpotifyApi.Builder()
                 .setClientId(CLIENT_ID)
                 .setClientSecret(CLIENT_SECRET)
-                .setRedirectUri(REDIRECT_URI)
+                .setRedirectUri(SpotifyHttpManager.makeUri(REDIRECT_URI))
                 .build();
 
     public SpotifyApi getSpotifyApi() {
