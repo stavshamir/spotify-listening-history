@@ -22,7 +22,9 @@ public class AuthTokensController {
     }
 
     @RequestMapping("/authorize")
-    public RedirectView authorize() {
+    public RedirectView authorize(HttpServletResponse response) {
+        response.addHeader("Access-Control-Allow-Credentials","true");
+        
         String url = authTokensService
                 .getAuthorizationCodeUriRequest("user-read-recently-played")
                 .execute()
