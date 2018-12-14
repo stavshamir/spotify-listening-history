@@ -46,7 +46,7 @@ public class AuthTokensController {
         }
 
         String redirectUrl = "https://stavshamir.github.io/slh-angular-client/";
-        return new ModelAndView("redirect:" + redirectUrl);
+        return new ModelAndView("forward:" + redirectUrl);
     }
 
 }
