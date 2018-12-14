@@ -44,7 +44,8 @@ public class AuthTokensController {
             return "Failed to retrieve authorization credentials from Spotify API: " + e.getMessage();
         }
 
-        return "Authorization credentials stored successfully";
+        String redirectUrl = "https://stavshamir.github.io/slh-angular-client/";
+        return "redirect:" + redirectUrl;
     }
 
 }
