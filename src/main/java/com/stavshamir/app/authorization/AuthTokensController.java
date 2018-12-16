@@ -48,7 +48,7 @@ public class AuthTokensController {
     }
 
     @PostMapping("/authorize/code")
-    public void code(HttpServletResponse response, @RequestBody String code) throws IOException, SpotifyWebApiException {
+    public String code(HttpServletResponse response, @RequestBody String code) throws IOException, SpotifyWebApiException {
         response.addHeader("Access-Control-Allow-Credentials","true");
         return authTokensService.retrieveAndPersistTokens(code);
     }
