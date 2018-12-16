@@ -49,4 +49,10 @@ public class AuthTokensController {
         return new ModelAndView("redirect:" + redirectUrl);
     }
 
+    @PostMapping("/authorize/code")
+    public void code(HttpServletResponse response, @RequestBody String code) throws IOException, SpotifyWebApiException {
+        String userId = authTokensService.retrieveAndPersistTokens(code);
+        response.addCookie(new Cookie("spotify-user-uri", userId));
+    }
+    
 }
