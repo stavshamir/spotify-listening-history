@@ -36,7 +36,7 @@ public class ListeningHistoryController {
     @RequestMapping("/get")
     public Page<TrackDataWithPlayedAt> get(
             Pageable pageable,
-            @CookieValue("spotify-user-uri") String userUri,
+            @RequestHeader("spotify-user-uri") String userUri,
             @RequestParam(required = false, defaultValue = "0") long after,
             @RequestParam(required = false, defaultValue = "4000000000000") long before,
             @RequestParam(required = false, defaultValue = "false") boolean update,
