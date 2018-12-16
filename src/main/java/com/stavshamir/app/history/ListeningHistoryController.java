@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.List;
 
 @RestController
 @RequestMapping("/listening-history")
@@ -33,7 +32,7 @@ public class ListeningHistoryController {
         return "Listening history persisted";
     }
 
-    @RequestMapping("/get")
+    @GetMapping
     public Page<TrackDataWithPlayedAt> get(
             Pageable pageable,
             @RequestHeader("spotify-user-uri") String userUri,
@@ -51,10 +50,10 @@ public class ListeningHistoryController {
         return listeningHistoryService.getListeningHistory(userUri, new Timestamp(after), new Timestamp(before), pageable);
     }
 
-    @RequestMapping("/most-played")
+    @GetMapping("/most-played")
     public Page<TrackDataWithPlayCount> mostPlayed(
             Pageable pageable,
-            @CookieValue("spotify-user-uri") String userUri,
+            @RequestHeader("spotify-user-uri") String userUri,
             @RequestParam(required = false) Long after,        @RequestParam(required = false) Long before,
             @RequestParam(required = false) Integer fromYear,  @RequestParam(required = false) Integer toYear,
             @RequestParam(required = false) Integer fromMonth, @RequestParam(required = false) Integer toMonth,

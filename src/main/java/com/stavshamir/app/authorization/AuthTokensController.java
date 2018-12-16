@@ -3,14 +3,13 @@ package com.stavshamir.app.authorization;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @RestController
+@RequestMapping("/authorize")
 public class AuthTokensController {
 
     private final AuthTokensService authTokensService;
@@ -20,7 +19,7 @@ public class AuthTokensController {
         this.authTokensService = authTokensService;
     }
 
-    @RequestMapping("/authorize")
+    @GetMapping
     public RedirectView authorize(HttpServletResponse response) {
         response.addHeader("Access-Control-Allow-Credentials","true");
         
@@ -34,20 +33,8 @@ public class AuthTokensController {
         return redirectView;
     }
 
-    @RequestMapping("/callback")
-    public ModelAndView callback(HttpServletResponse response, @RequestParam("code") String code) {
-        try {
-            String userId = authTokensService.retrieveAndPersistTokens(code);
-            response.addCookie(new Cookie("spotify-user-uri", userId));
-        } catch (IOException | SpotifyWebApiException e) {
-//             return "Failed to retrieve authorization credentials from Spotify API: " + e.getMessage();
-        }
 
-        String redirectUrl = "https://stavshamir.github.io/slh-angular-client/";
-        return new ModelAndView("redirect:" + redirectUrl);
-    }
-
-    @PostMapping("/authorize/code")
+    @PostMapping("/code")
     public String code(HttpServletResponse response, @RequestBody String code) throws IOException, SpotifyWebApiException {
         response.addHeader("Access-Control-Allow-Credentials","true");
         return authTokensService.retrieveAndPersistTokens(code);
