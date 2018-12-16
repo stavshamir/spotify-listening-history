@@ -24,7 +24,7 @@ public class Application {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/listening-history/get").allowedOrigins(listeningHistoryGetAllowedOrigins);
+                registry.addMapping("/listening-history").allowedOrigins(listeningHistoryGetAllowedOrigins);
                 registry.addMapping("/listening-history/most-played").allowedOrigins(listeningHistoryGetAllowedOrigins);
                 registry.addMapping("/authorize").allowedOrigins(listeningHistoryGetAllowedOrigins);
                 registry.addMapping("/authorize/code").allowedOrigins(listeningHistoryGetAllowedOrigins);
