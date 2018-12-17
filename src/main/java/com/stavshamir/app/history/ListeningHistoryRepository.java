@@ -20,8 +20,7 @@ public interface ListeningHistoryRepository extends PagingAndSortingRepository<L
                     " AND EXTRACT(MONTH from played_at) >= :from_month AND EXTRACT(MONTH from played_at) < :to_month" +
                     " AND EXTRACT(HOUR from played_at) >= :from_hour AND EXTRACT(HOUR from played_at) < :to_hour" +
                     " GROUP BY uri" +
-                    " ORDER BY COUNT(uri) DESC" +
-                    " LIMIT 100",
+                    " ORDER BY COUNT(uri) DESC"
             countQuery = "SELECT COUNT(*) FROM (" +
                     " SELECT COUNT(uri)" +
                     " FROM listening_history" +
