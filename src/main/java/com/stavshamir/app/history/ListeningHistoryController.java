@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.List;
 
 @RestController
 @RequestMapping("/listening-history")
@@ -51,10 +52,8 @@ public class ListeningHistoryController {
     }
 
     @GetMapping("/most-played")
-    public Page<TrackDataWithPlayCount> mostPlayed(
-            Pageable pageable,
+    public List<TrackDataWithPlayCount> mostPlayed(
             @RequestHeader("spotify-user-uri") String userUri,
-            @RequestParam(required = false) Long after,        @RequestParam(required = false) Long before,
             @RequestParam(required = false) Integer fromYear,  @RequestParam(required = false) Integer toYear,
             @RequestParam(required = false) Integer fromMonth, @RequestParam(required = false) Integer toMonth,
             @RequestParam(required = false) Integer fromHour,  @RequestParam(required = false) Integer toHour,
@@ -68,13 +67,12 @@ public class ListeningHistoryController {
         }
 
         GetMostPlayedQuery query = GetMostPlayedQuery.builder(userUri)
-                .after(after).before(before)
                 .fromYear(fromYear).toYear(toYear)
                 .fromMonth(fromMonth).toMonth(toMonth)
                 .fromHour(fromHour).toHour(toHour)
                 .build();
 
-        return listeningHistoryService.getMostPlayed(query, pageable);
+        return listeningHistoryService.getMostPlayed(query);
     }
 
 }

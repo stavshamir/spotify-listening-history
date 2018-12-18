@@ -214,51 +214,6 @@ public class ListeningHistoryServiceImplIntegrationTest {
 
     @Test
     @Transactional
-    public void getMostPlayed_after_and_before() throws IOException, SpotifyWebApiException {
-        final TrackData track1 = new TrackData("1", "foo1", null, "", "");
-        final TrackData track2 = new TrackData("2", "foo2", null, "", "");
-        final TrackData track3 = new TrackData("3", "foo3", null, "", "");
-
-        persistEntities(Lists.newArrayList(
-                // ListeningHistory
-                new ListeningHistory(TESTER_USER_ID, "1", new Timestamp(1000)),
-                new ListeningHistory(TESTER_USER_ID, "1", new Timestamp(1100)),
-                new ListeningHistory(TESTER_USER_ID, "1", new Timestamp(1200)),
-                new ListeningHistory(TESTER_USER_ID, "2", new Timestamp(2000)),
-                new ListeningHistory(TESTER_USER_ID, "2", new Timestamp(2100)),
-                new ListeningHistory(TESTER_USER_ID, "3", new Timestamp(3000)),
-
-                // TrackData
-                track1,
-                track2,
-                track3
-        ));
-
-        final PageRequest pageable = PageRequest.of(0, 3);
-
-        GetMostPlayedQuery query = GetMostPlayedQuery.builder(TESTER_USER_ID)
-                .after(1150L)
-                .build();
-
-        assertThat(listeningHistoryService.getMostPlayed(query, pageable))
-                .as("Custom after parameter")
-                .hasSize(3)
-                .contains(new TrackDataWithPlayCount(track1, 1))
-                .contains(new TrackDataWithPlayCount(track2, 2))
-                .contains(new TrackDataWithPlayCount(track3, 1));
-
-        query = GetMostPlayedQuery.builder(TESTER_USER_ID)
-                .before(1200L)
-                .build();
-
-        assertThat(listeningHistoryService.getMostPlayed(query, pageable))
-                .as("Custom before parameter")
-                .hasSize(1)
-                .contains(new TrackDataWithPlayCount(track1, 2));
-    }
-
-    @Test
-    @Transactional
     public void getMostPlayed_fromYear_and_toYear() throws IOException, SpotifyWebApiException {
         final TrackData track1 = new TrackData("1", "foo1", null, "", "");
         final TrackData track2 = new TrackData("2", "foo2", null, "", "");
@@ -285,7 +240,7 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .fromYear(2017)
                 .build();
 
-        assertThat(listeningHistoryService.getMostPlayed(query, pageable))
+        assertThat(listeningHistoryService.getMostPlayed(query))
                 .as("From year")
                 .hasSize(3)
                 .contains(new TrackDataWithPlayCount(track1, 2))
@@ -296,7 +251,7 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .toYear(2017)
                 .build();
 
-        assertThat(listeningHistoryService.getMostPlayed(query, pageable))
+        assertThat(listeningHistoryService.getMostPlayed(query))
                 .as("To year")
                 .hasSize(1)
                 .contains(new TrackDataWithPlayCount(track1, 1));
@@ -306,7 +261,7 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .toYear(2019)
                 .build();
 
-        assertThat(listeningHistoryService.getMostPlayed(query, pageable))
+        assertThat(listeningHistoryService.getMostPlayed(query))
                 .as("Between years")
                 .hasSize(3)
                 .contains(new TrackDataWithPlayCount(track1, 2))
@@ -342,7 +297,7 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .fromMonth(2)
                 .build();
 
-        assertThat(listeningHistoryService.getMostPlayed(query, pageable))
+        assertThat(listeningHistoryService.getMostPlayed(query))
                 .as("From month")
                 .hasSize(3)
                 .contains(new TrackDataWithPlayCount(track1, 2))
@@ -353,7 +308,7 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .toMonth(2)
                 .build();
 
-        assertThat(listeningHistoryService.getMostPlayed(query, pageable))
+        assertThat(listeningHistoryService.getMostPlayed(query))
                 .as("To month")
                 .hasSize(2)
                 .contains(new TrackDataWithPlayCount(track1, 1))
@@ -364,7 +319,7 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .toMonth(4)
                 .build();
 
-        assertThat(listeningHistoryService.getMostPlayed(query, pageable))
+        assertThat(listeningHistoryService.getMostPlayed(query))
                 .as("Between months")
                 .hasSize(3)
                 .contains(new TrackDataWithPlayCount(track1, 2))
@@ -398,7 +353,7 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .fromHour(2)
                 .build();
 
-        assertThat(listeningHistoryService.getMostPlayed(query, PageRequest.of(0, 3)))
+        assertThat(listeningHistoryService.getMostPlayed(query))
                 .as("From hour")
                 .hasSize(3)
                 .contains(new TrackDataWithPlayCount(track1, 2))
@@ -409,7 +364,7 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .toHour(5)
                 .build();
 
-        assertThat(listeningHistoryService.getMostPlayed(query, PageRequest.of(0, 3)))
+        assertThat(listeningHistoryService.getMostPlayed(query))
                 .as("To hour")
                 .hasSize(2)
                 .contains(new TrackDataWithPlayCount(track1, 2))
@@ -420,7 +375,7 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .toHour(12)
                 .build();
 
-        assertThat(listeningHistoryService.getMostPlayed(query, PageRequest.of(0, 3)))
+        assertThat(listeningHistoryService.getMostPlayed(query))
                 .as("Between hours")
                 .hasSize(3)
                 .contains(new TrackDataWithPlayCount(track1, 1))

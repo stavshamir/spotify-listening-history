@@ -41,12 +41,12 @@ public interface ListeningHistoryService {
     Page<TrackDataWithPlayedAt> getListeningHistory(String userUri, Timestamp after, Timestamp before, Pageable pageable) throws IOException, SpotifyWebApiException;
 
     /**
-     * Return the most played tracks' data and play count.
+     * Return the (at most 50) most played tracks' data and play count.
      * @param getMostPlayedQuery
      * @return  the most played tracks' data and play count.
      * @throws IOException
      * @throws SpotifyWebApiException
      */
-    Page<TrackDataWithPlayCount> getMostPlayed(GetMostPlayedQuery getMostPlayedQuery, Pageable pageable) throws IOException, SpotifyWebApiException;
+    List<TrackDataWithPlayCount> getMostPlayed(GetMostPlayedQuery getMostPlayedQuery) throws IOException, SpotifyWebApiException;
 
 }
