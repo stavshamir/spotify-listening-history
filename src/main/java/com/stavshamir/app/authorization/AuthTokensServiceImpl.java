@@ -41,7 +41,7 @@ public class AuthTokensServiceImpl implements AuthTokensService {
 
     @Override
     public String retrieveAndPersistTokens(String code) throws IOException, SpotifyWebApiException {
-        AuthorizationCodeCredentials credentials = getAuthorizationCodeRequest(code).execute();
+        AuthorizationCodeCredentials credentials = spotifyClient.getCredentials(code);
 
         String userId = spotifyClient.getSpotifyApiWithAccessToken(credentials.getAccessToken())
                 .getCurrentUsersProfile()
@@ -51,13 +51,6 @@ public class AuthTokensServiceImpl implements AuthTokensService {
 
         persistTokens(userId, credentials);
         return userId;
-    }
-
-    private AuthorizationCodeRequest getAuthorizationCodeRequest(String code) {
-        return spotifyClient
-                .getSpotifyApi()
-                .authorizationCode(code)
-                .build();
     }
 
     private void persistTokens(String userId, AuthorizationCodeCredentials credentials) {
