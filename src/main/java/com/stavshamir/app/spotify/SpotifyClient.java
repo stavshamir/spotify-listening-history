@@ -1,5 +1,6 @@
 package com.stavshamir.app.spotify;
 
+import com.stavshamir.app.spotify.types.UserCredentials;
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.SpotifyHttpManager;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
@@ -38,11 +39,33 @@ public class SpotifyClient {
         return spotifyApi;
     }
 
-    public AuthorizationCodeCredentials getCredentials(String code) throws IOException, SpotifyWebApiException {
-        return spotifyApi
+    public UserCredentials requestCredentials(String code) throws IOException, SpotifyWebApiException {
+        AuthorizationCodeCredentials credentials = spotifyApi
                 .authorizationCode(code)
                 .build()
                 .execute();
+
+        return new UserCredentials(credentials.getAccessToken(), credentials.getRefreshToken());
+    }
+
+    public String requestUserId(String accessToken) throws IOException, SpotifyWebApiException {
+        spotifyApi.setAccessToken(accessToken);
+        return spotifyApi
+                .getCurrentUsersProfile()
+                .build()
+                .execute()
+                .getUri();
+    }
+
+    public UserCredentials refreshCredentials(String refreshToken) throws IOException, SpotifyWebApiException {
+        spotifyApi.setRefreshToken(refreshToken);
+
+        AuthorizationCodeCredentials credentials = spotifyApi
+                .authorizationCodeRefresh()
+                .build()
+                .execute();
+
+        return new UserCredentials(credentials.getAccessToken(), credentials.getRefreshToken());
     }
 
 }

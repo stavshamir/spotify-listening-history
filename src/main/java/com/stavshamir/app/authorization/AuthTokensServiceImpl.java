@@ -1,10 +1,8 @@
 package com.stavshamir.app.authorization;
 
 import com.stavshamir.app.spotify.SpotifyClient;
+import com.stavshamir.app.spotify.types.UserCredentials;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
-import com.wrapper.spotify.model_objects.credentials.AuthorizationCodeCredentials;
-import com.wrapper.spotify.requests.authorization.authorization_code.AuthorizationCodeRefreshRequest;
-import com.wrapper.spotify.requests.authorization.authorization_code.AuthorizationCodeRequest;
 import com.wrapper.spotify.requests.authorization.authorization_code.AuthorizationCodeUriRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,19 +39,13 @@ public class AuthTokensServiceImpl implements AuthTokensService {
 
     @Override
     public String retrieveAndPersistTokens(String code) throws IOException, SpotifyWebApiException {
-        AuthorizationCodeCredentials credentials = spotifyClient.getCredentials(code);
-
-        String userId = spotifyClient.getSpotifyApiWithAccessToken(credentials.getAccessToken())
-                .getCurrentUsersProfile()
-                .build()
-                .execute()
-                .getUri();
-
+        UserCredentials credentials = spotifyClient.requestCredentials(code);
+        String userId = spotifyClient.requestUserId(credentials.getAccessToken());
         persistTokens(userId, credentials);
         return userId;
     }
 
-    private void persistTokens(String userId, AuthorizationCodeCredentials credentials) {
+    private void persistTokens(String userId, UserCredentials credentials) {
         String accessToken = credentials.getAccessToken();
         String refreshToken = credentials.getRefreshToken();
 
@@ -80,16 +72,10 @@ public class AuthTokensServiceImpl implements AuthTokensService {
     }
 
     private void refreshAuthorization(String userId) {
-        spotifyClient.getSpotifyApi()
-                .setRefreshToken(getRefreshToken(userId));
-
-        AuthorizationCodeRefreshRequest refreshRequest = spotifyClient
-                .getSpotifyApi()
-                .authorizationCodeRefresh()
-                .build();
-
+        String refreshToken = getRefreshToken(userId);
         try {
-            persistTokens(userId, refreshRequest.execute());
+            UserCredentials credentials = spotifyClient.refreshCredentials(refreshToken);
+            persistTokens(userId, credentials);
         } catch (IOException | SpotifyWebApiException e) {
             logger.error("Failed to retrieve authorization credentials from Spotify API: " + e.getMessage());
         }
