@@ -6,10 +6,7 @@ import com.stavshamir.app.authorization.AuthTokensService;
 import com.stavshamir.app.spotify.SpotifyClient;
 import com.stavshamir.app.track.TrackData;
 import com.stavshamir.app.track.TrackDataService;
-import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
-import com.wrapper.spotify.requests.IRequest;
-import com.wrapper.spotify.requests.data.player.GetCurrentUsersRecentlyPlayedTracksRequest;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,11 +18,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
@@ -80,54 +74,6 @@ public class ListeningHistoryServiceImplIntegrationTest {
 
     @Test
     @Transactional
-    public void getCurrentUsersRecentlyPlayedTracksRequest_new_user() {
-        when(mostRecentlyPlayedAtRepository.findByUserId(MOCK_USER_ID))
-                .thenReturn(Optional.empty());
-
-        GetCurrentUsersRecentlyPlayedTracksRequest request = listeningHistoryService.buildGetCurrentUsersRecentlyPlayedTracksRequest(MOCK_USER_ID);
-
-        assertThat(getRequestParam(request, "after"))
-                .as("A new user request 'after' field should be Timestamp(0)")
-                .isEqualTo(SpotifyApi.formatDefaultDate(new Timestamp(0)));
-    }
-
-    @Test
-    @Transactional
-    public void getCurrentUsersRecentlyPlayedTracksRequest_existing_user() {
-        Timestamp mostRecentPlayedAt = new Timestamp(1000);
-
-        when(mostRecentlyPlayedAtRepository.findByUserId(TESTER_USER_ID))
-                .thenReturn(Optional.of(new MostRecentlyPlayedAt(TESTER_USER_ID, mostRecentPlayedAt)));
-
-        GetCurrentUsersRecentlyPlayedTracksRequest request = listeningHistoryService
-                .buildGetCurrentUsersRecentlyPlayedTracksRequest(TESTER_USER_ID);
-
-        assertThat(getRequestParam(request, "after"))
-                .as("An existing user request 'after' field should match that in most_recently_played_at table")
-                .isEqualTo(SpotifyApi.formatDefaultDate(mostRecentPlayedAt));
-    }
-
-    private String getRequestParam(IRequest request, String paramName) {
-        String requestUri = request
-                .getUri()
-                .toString();
-
-        String decoded;
-        try {
-            decoded = URLDecoder.decode(requestUri, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalArgumentException(e.getMessage());
-        }
-
-        return UriComponentsBuilder
-                .fromUriString(decoded)
-                .build()
-                .getQueryParams()
-                .get(paramName).get(0);
-    }
-
-    @Test
-    @Transactional
     public void persistListeningHistoryForUser_only_history_after_most_recently_played_is_persisted()
             throws IOException, SpotifyWebApiException {
         MostRecentlyPlayedAt mostRecentlyPlayedAt = new MostRecentlyPlayedAt(TESTER_USER_ID, Timestamp.valueOf("2017-08-08 09:12:37"));
@@ -140,8 +86,8 @@ public class ListeningHistoryServiceImplIntegrationTest {
                 .map(ListeningHistory::getUri)
                 .collect(toList());
 
-        String trackAfterMostRecentlyPlayed  = "spotify:track:0D2NQGump2lZJpXMyGKE84";
-        String trackAtMostRecentlyPlayed     = "spotify:track:4t3iREL6SRks2dfrVxoI1E";
+        String trackAfterMostRecentlyPlayed = "spotify:track:0D2NQGump2lZJpXMyGKE84";
+        String trackAtMostRecentlyPlayed = "spotify:track:4t3iREL6SRks2dfrVxoI1E";
         String trackBeforeMostRecentlyPlayed = "spotify:track:7vjxo27ux20F8mxCM3zICr";
 
         assertThat(listeningHistoryTrackUris)

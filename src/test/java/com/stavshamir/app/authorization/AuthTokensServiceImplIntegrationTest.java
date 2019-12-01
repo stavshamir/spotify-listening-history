@@ -1,6 +1,7 @@
 package com.stavshamir.app.authorization;
 
 import com.stavshamir.app.spotify.SpotifyClient;
+import com.stavshamir.app.spotify.SpotifyClientImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,12 +10,14 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+
 import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = { SpotifyClient.class })
+@ContextConfiguration(classes = {SpotifyClientImpl.class})
 public class AuthTokensServiceImplIntegrationTest {
 
     private static final String TESTER_USER_ID = "spotify:user:9nvqz07deqbr93zrcdeab48rk";

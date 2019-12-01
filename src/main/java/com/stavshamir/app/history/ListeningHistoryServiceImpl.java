@@ -5,9 +5,7 @@ import com.stavshamir.app.spotify.SpotifyClient;
 import com.stavshamir.app.track.TrackData;
 import com.stavshamir.app.track.TrackDataService;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
-import com.wrapper.spotify.model_objects.specification.PagingCursorbased;
 import com.wrapper.spotify.model_objects.specification.PlayHistory;
-import com.wrapper.spotify.requests.data.player.GetCurrentUsersRecentlyPlayedTracksRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +27,6 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
 
     private Logger logger = LoggerFactory.getLogger(ListeningHistoryServiceImpl.class);
 
-    private static final int MAX_LIMIT = 50;
-
     private final SpotifyClient spotifyClient;
     private final AuthTokensService authTokensService;
     private final ListeningHistoryRepository listeningHistoryRepository;
@@ -46,21 +42,6 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
         this.listeningHistoryRepository = listeningHistoryRepository;
         this.mostRecentlyPlayedAtRepository = mostRecentlyPlayedAtRepository;
         this.trackDataService = trackDataService;
-    }
-
-    @Override
-    public GetCurrentUsersRecentlyPlayedTracksRequest buildGetCurrentUsersRecentlyPlayedTracksRequest(String userId) {
-        Timestamp mostRecentlyPlayedAt = mostRecentlyPlayedAtRepository
-                .findByUserId(userId)
-                .map(MostRecentlyPlayedAt::getPlayedAt)
-                .orElse(new Timestamp(0));
-
-        return spotifyClient
-                .getSpotifyApiWithAccessToken(authTokensService.getAccessToken(userId))
-                .getCurrentUsersRecentlyPlayedTracks()
-                .after(mostRecentlyPlayedAt)
-                .limit(MAX_LIMIT)
-                .build();
     }
 
     @Override
@@ -86,8 +67,14 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
     }
 
     private List<ListeningHistory> getListeningHistoryFromSpotify(String userId) throws IOException, SpotifyWebApiException {
-        PagingCursorbased<PlayHistory> tracks = buildGetCurrentUsersRecentlyPlayedTracksRequest(userId).execute();
-        return Arrays.stream(tracks.getItems())
+        String accessToken = authTokensService.getAccessToken(userId);
+        Timestamp mostRecentlyPlayedAt = mostRecentlyPlayedAtRepository
+                .findByUserId(userId)
+                .map(MostRecentlyPlayedAt::getPlayedAt)
+                .orElse(new Timestamp(0));
+
+        PlayHistory[] listeningHistory = spotifyClient.getListeningHistory(accessToken, mostRecentlyPlayedAt);
+        return Arrays.stream(listeningHistory)
                 .map(item -> ListeningHistory.fromPlayHistoryItem(userId, item))
                 .collect(toList());
     }
