@@ -1,5 +1,7 @@
 package com.stavshamir.app.history;
 
+import com.wrapper.spotify.model_objects.specification.PlayHistory;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -17,7 +19,8 @@ public class ListeningHistory implements Comparable<ListeningHistory> {
     private String uri;
     private Timestamp playedAt;
 
-    public ListeningHistory() {}
+    public ListeningHistory() {
+    }
 
     public ListeningHistory(String userId, String uri, Timestamp playedAt) {
         this.userId = userId;
@@ -59,7 +62,15 @@ public class ListeningHistory implements Comparable<ListeningHistory> {
 
     @Override
     public int compareTo(ListeningHistory other) {
-        return (int)(this.getPlayedAt().getTime() - other.getPlayedAt().getTime());
+        return (int) (this.getPlayedAt().getTime() - other.getPlayedAt().getTime());
+    }
+
+    public static ListeningHistory fromPlayHistoryItem(String userId, PlayHistory item) {
+        return new ListeningHistory(
+                userId,
+                item.getTrack().getUri(),
+                new Timestamp(item.getPlayedAt().getTime())
+        );
     }
 
 }

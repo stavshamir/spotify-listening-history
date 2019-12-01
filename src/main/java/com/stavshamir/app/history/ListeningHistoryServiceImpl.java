@@ -13,8 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 import org.springframework.util.ConcurrentReferenceHashMap;
 
 import java.io.IOException;
@@ -76,7 +76,7 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
         List<ListeningHistory> history;
 
         usersLocks.putIfAbsent(userId, new Object());
-        synchronized(usersLocks.get(userId)) {
+        synchronized (usersLocks.get(userId)) {
             history = getListeningHistoryFromSpotify(userId);
             updateMostRecentlyPlayedAt(userId, history);
         }
@@ -88,7 +88,7 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
     private List<ListeningHistory> getListeningHistoryFromSpotify(String userId) throws IOException, SpotifyWebApiException {
         PagingCursorbased<PlayHistory> tracks = buildGetCurrentUsersRecentlyPlayedTracksRequest(userId).execute();
         return Arrays.stream(tracks.getItems())
-                .map(item -> fromPlayHistoryItem(userId, item))
+                .map(item -> ListeningHistory.fromPlayHistoryItem(userId, item))
                 .collect(toList());
     }
 
@@ -99,14 +99,6 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
 
             persistMostRecentlyPlayedAt(userId, mostRecentlyPlayedAt);
         }
-    }
-
-    private static ListeningHistory fromPlayHistoryItem(String userId, PlayHistory item) {
-        return new ListeningHistory(
-                userId,
-                item.getTrack().getUri(),
-                new Timestamp(item.getPlayedAt().getTime())
-        );
     }
 
     private void persistMostRecentlyPlayedAt(String userId, Date mostRecentlyPlayedAt) {
@@ -146,8 +138,8 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
 
         List<TrackDataWithPlayCount> tracks = new ArrayList<>();
         for (Object[] o : items) {
-            String uri = (String)o[0];
-            int count = ((BigInteger)o[1]).intValue();
+            String uri = (String) o[0];
+            int count = ((BigInteger) o[1]).intValue();
 
             TrackData trackData = trackDataService.getTrackData(uri, query.getUserUri());
             tracks.add(new TrackDataWithPlayCount(trackData, count));
@@ -155,4 +147,5 @@ public class ListeningHistoryServiceImpl implements ListeningHistoryService {
 
         return tracks;
     }
+
 }
