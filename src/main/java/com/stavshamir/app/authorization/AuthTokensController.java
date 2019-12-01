@@ -21,12 +21,9 @@ public class AuthTokensController {
 
     @GetMapping
     public RedirectView authorize(HttpServletResponse response) {
-        response.addHeader("Access-Control-Allow-Credentials","true");
-        
-        String url = authTokensService
-                .getAuthorizationCodeUriRequest("user-read-recently-played")
-                .execute()
-                .toString();
+        response.addHeader("Access-Control-Allow-Credentials", "true");
+
+        String url = authTokensService.requestAuthorization();
 
         RedirectView redirectView = new RedirectView();
         redirectView.setUrl(url);
@@ -36,8 +33,8 @@ public class AuthTokensController {
 
     @PostMapping("/code")
     public String code(HttpServletResponse response, @RequestBody String code) throws IOException, SpotifyWebApiException {
-        response.addHeader("Access-Control-Allow-Credentials","true");
+        response.addHeader("Access-Control-Allow-Credentials", "true");
         return authTokensService.retrieveAndPersistTokens(code);
     }
-    
+
 }

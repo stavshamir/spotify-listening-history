@@ -40,7 +40,7 @@ public class SpotifyClient {
     }
 
     public UserCredentials requestCredentials(String code) throws IOException, SpotifyWebApiException {
-        AuthorizationCodeCredentials credentials = spotifyApi
+        AuthorizationCodeCredentials credentials = getSpotifyApi()
                 .authorizationCode(code)
                 .build()
                 .execute();
@@ -66,6 +66,15 @@ public class SpotifyClient {
                 .execute();
 
         return new UserCredentials(credentials.getAccessToken(), credentials.getRefreshToken());
+    }
+
+    public String requestAuthorization(String scope) {
+        return getSpotifyApi()
+                .authorizationCodeUri()
+                .scope(scope)
+                .build()
+                .execute()
+                .toString();
     }
 
 }

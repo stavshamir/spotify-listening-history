@@ -3,7 +3,6 @@ package com.stavshamir.app.authorization;
 import com.stavshamir.app.spotify.SpotifyClient;
 import com.stavshamir.app.spotify.types.UserCredentials;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
-import com.wrapper.spotify.requests.authorization.authorization_code.AuthorizationCodeUriRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,15 +25,6 @@ public class AuthTokensServiceImpl implements AuthTokensService {
     public AuthTokensServiceImpl(SpotifyClient spotifyClient, AuthTokensRepository authTokensRepository) {
         this.spotifyClient = spotifyClient;
         this.authTokensRepository = authTokensRepository;
-    }
-
-    @Override
-    public AuthorizationCodeUriRequest getAuthorizationCodeUriRequest(String scope) {
-        return spotifyClient
-                .getSpotifyApi()
-                .authorizationCodeUri()
-                .scope(scope)
-                .build();
     }
 
     @Override
@@ -94,6 +84,11 @@ public class AuthTokensServiceImpl implements AuthTokensService {
                 .stream()
                 .map(AuthTokens::getUserId)
                 .collect(toList());
+    }
+
+    @Override
+    public String requestAuthorization() {
+        return spotifyClient.requestAuthorization("user-read-recently-played");
     }
 
 }
